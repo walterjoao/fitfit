@@ -6,6 +6,8 @@ import type { ReactElement } from "react";
 export type SidebarItem =
   | "dashboard"
   | "leaderboard"
+  | "members"
+  | "programs"
   | "shop"
   | "events"
   | "marketplace"
@@ -34,6 +36,27 @@ const items: { key: SidebarItem; label: string; href: string; icon: ReactElement
       <>
         <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z" />
         <path d="M7 6H4a1 1 0 0 0-1 1c0 2.5 1.8 4.5 4.2 4.9M17 6h3a1 1 0 0 1 1 1c0 2.5-1.8 4.5-4.2 4.9" />
+      </>
+    ),
+  },
+  {
+    key: "members",
+    label: "Membros",
+    href: "/dashboard",
+    icon: (
+      <>
+        <circle cx="9" cy="8" r="3.2" />
+        <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 8h4M19 6v4" />
+      </>
+    ),
+  },
+  {
+    key: "programs",
+    label: "Programas",
+    href: "/dashboard",
+    icon: (
+      <>
+        <path d="M6.5 6.5 3 10l3.5 3.5M17.5 6.5 21 10l-3.5 3.5M14 4l-4 16" />
       </>
     ),
   },

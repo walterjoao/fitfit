@@ -27,13 +27,6 @@ export default function Header() {
   return (
     <header className="app-header">
       <div className="header-inner" ref={wrapRef}>
-        <Link className="brand" href="/">
-          <span className="brand-mark" />
-          <span className="brand-word">
-            Fit<b>Pro</b>
-          </span>
-        </Link>
-
         <div className="search-wrap">
           <div className="search">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round">
