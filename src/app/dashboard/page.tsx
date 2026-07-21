@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import Header from "@/components/Header";
 
-const navGroups: { cap: string; items: { key: string; label: string; icon: JSX.Element }[] }[] = [
+const navGroups: { cap: string; items: { key: string; label: string; icon: ReactElement }[] }[] = [
   {
     cap: "Visão geral",
     items: [
