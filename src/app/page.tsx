@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
 import {
   lbData,
   initials,
@@ -54,6 +55,7 @@ export default function Home() {
 
   return (
     <>
+      <Sidebar active="leaderboard" />
       <Header />
       <div className="shell">
         <nav className="views">

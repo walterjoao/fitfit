@@ -15,6 +15,19 @@
   --font-display:-apple-system,"SF Pro Display","Inter",ui-sans-serif,"Segoe UI",system-ui,sans-serif;
   --font-body:-apple-system,"SF Pro Text","Inter",ui-sans-serif,"Segoe UI",system-ui,sans-serif;
   --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,monospace;
+  --sidebar-w:80px;
+  --sidebar-bg:#FFFFFF;
+  --sidebar-border:#E5E7EB;
+  --sidebar-icon:#9CA3AF;
+  --sidebar-icon-active:#111827;
+  --sidebar-active-bg:#F3F4F6;
+}
+:root[data-theme="dark"]{
+  --sidebar-bg:#16191D;
+  --sidebar-border:rgba(242,243,245,.12);
+  --sidebar-icon:#767D87;
+  --sidebar-icon-active:#F2F3F5;
+  --sidebar-active-bg:#22262B;
 }
 :root[data-theme="dark"]{
   --ink:#F2F3F5; --paper:#0E1012; --surface:#16191D; --surface-2:#1B1F24;
@@ -42,7 +55,7 @@
 
 *{box-sizing:border-box;}
 html,body{height:100%;}
-body{margin:0;background:var(--paper);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+body{margin:0;background:var(--paper);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;padding-left:var(--sidebar-w);}
 h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;letter-spacing:-.01em;}
 p{margin:0;}
 .tabular{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
@@ -350,4 +363,25 @@ a{color:inherit;text-decoration:none;}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+}
+
+/* ---------- Sidebar ---------- */
+.app-sidebar{
+  position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;z-index:40;
+  background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:20px 0;
+}
+.app-sidebar-top,.app-sidebar-bottom{display:flex;flex-direction:column;align-items:center;gap:22px;}
+.sidebar-item{
+  display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9px;
+  color:var(--sidebar-icon);transition:background .14s ease,color .14s ease;
+}
+.sidebar-item svg{stroke:currentColor;}
+.sidebar-item:hover{background:var(--sidebar-active-bg);color:var(--sidebar-icon-active);}
+.sidebar-item.active{background:var(--sidebar-active-bg);color:var(--sidebar-icon-active);}
+
+@media (max-width:640px){
+  :root{--sidebar-w:0px;}
+  .app-sidebar{display:none;}
 }

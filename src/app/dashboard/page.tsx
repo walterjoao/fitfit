@@ -2,6 +2,7 @@
 
 import { useState, type ReactElement } from "react";
 import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
 
 const navGroups: { cap: string; items: { key: string; label: string; icon: ReactElement }[] }[] = [
   {
@@ -63,6 +64,7 @@ export default function Dashboard() {
 
   return (
     <>
+      <Sidebar active="dashboard" />
       <Header />
       <div className="shell">
         <div className="page-head" style={{ paddingTop: 22 }}>
