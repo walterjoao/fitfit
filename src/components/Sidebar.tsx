@@ -72,7 +72,7 @@ const items: { key: SidebarItem; label: string; href: string; icon: ReactElement
   },
   {
     key: "messages",
-    label: "Messages",
+    label: "Mensagens",
     href: "#",
     icon: (
       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />
@@ -104,27 +104,30 @@ export default function Sidebar({ active }: { active: SidebarItem }) {
             aria-label={item.label}
             aria-current={active === item.key ? "page" : undefined}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               {item.icon}
             </svg>
+            <span>{item.label}</span>
           </Link>
         ))}
       </div>
 
       <div className="app-sidebar-bottom">
         <Link href="#" className="sidebar-item" title="Ajuda" aria-label="Ajuda">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="9" />
             <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1.3.9-1.3 1.7v.3" />
             <path d="M12 17h.01" />
           </svg>
+          <span>Ajuda</span>
         </Link>
         <Link href="#" className="sidebar-item" title="Sair" aria-label="Sair">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <path d="M16 17l5-5-5-5" />
             <path d="M21 12H9" />
           </svg>
+          <span>Sair</span>
         </Link>
       </div>
     </nav>
