@@ -95,6 +95,13 @@ export default function Sidebar({ active }: { active: SidebarItem }) {
   return (
     <nav className="app-sidebar" aria-label="Navegação principal">
       <div className="app-sidebar-top">
+        <Link href="/" className="sidebar-brand" aria-label="FitPro">
+          <span className="sidebar-brand-mark" />
+          <span className="sidebar-brand-word">
+            Fit<b>Pro</b>
+          </span>
+        </Link>
+
         {items.map((item) => (
           <Link
             key={item.key}
