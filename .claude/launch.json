@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bridge-proxy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [".claude/proxy.js"],
+      "port": 8123
+    },
+    {
+      "name": "sellia-local",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d C:\\Users\\Owner\\Desktop\\sellia && php artisan serve --host=127.0.0.1 --port=8010"],
+      "port": 8010
+    },
+    {
+      "name": "fitpro-web",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d C:\\Users\\Owner\\Desktop\\fitpro\\apps\\web && npm run dev"],
+      "port": 3000
+    },
+    {
+      "name": "fitpro-app",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "npm run dev"],
+      "port": 3001
+    }
+  ]
+}
