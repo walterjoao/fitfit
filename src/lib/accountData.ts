@@ -26,6 +26,10 @@ export function messagesPath(role: string) {
   const base = roleBasePath[role as RoleKey] || "/dashboard";
   return `${base}/messages`;
 }
+export function leaderboardPath(role: string) {
+  const base = roleBasePath[role as RoleKey] || "/dashboard";
+  return `${base}/leaderboard`;
+}
 
 export type SettingsSection = { title: string; description: string };
 

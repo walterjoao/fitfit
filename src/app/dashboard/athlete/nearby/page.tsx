@@ -112,7 +112,7 @@ export default function NearbyPage() {
               )}
             </div>
 
-            <Link href="/leaderboard" className="dash-panel" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", marginBottom: 24, textDecoration: "none", color: "inherit" }}>
+            <Link href="/dashboard/athlete/leaderboard" className="dash-panel" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", marginBottom: 24, textDecoration: "none", color: "inherit" }}>
               <span style={{ fontSize: 13.5, fontWeight: 700 }}>🏆 Top Atletas na Tua Zona</span>
               <span className="btn btn-ghost btn-sm">Ver Leaderboard Local →</span>
             </Link>
