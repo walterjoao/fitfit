@@ -63,7 +63,7 @@ const items: { key: SidebarItem; label: string; href: string; icon: ReactElement
   {
     key: "shop",
     label: "Loja",
-    href: "/",
+    href: "/shop",
     icon: (
       <>
         <path d="M3 9 12 4l9 5-9 5-9-5Z" />
@@ -74,7 +74,7 @@ const items: { key: SidebarItem; label: string; href: string; icon: ReactElement
   {
     key: "events",
     label: "Eventos",
-    href: "/",
+    href: "/events",
     icon: (
       <>
         <rect x="3" y="5" width="18" height="16" rx="2" />
