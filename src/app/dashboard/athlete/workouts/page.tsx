@@ -44,6 +44,7 @@ function WorkoutCard({ w, createdBy, onDelete }: { w: AssignedWorkout | Personal
         <div className="rich-meta-row">
           <span>⏱ {w.durationMin} min</span>
           <span>💪 {w.exercises.length} exercícios</span>
+          <span>🔥 ~{w.durationMin * 7} kcal</span>
         </div>
         <p className="rich-desc">&ldquo;{w.description}&rdquo;</p>
         <div>

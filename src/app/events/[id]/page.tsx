@@ -7,7 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import type { Role } from "@/components/Sidebar";
 import { useSession } from "@/lib/session";
 import { notifyAndEmail } from "@/lib/notifications";
-import { events, evtArt, evtLabel } from "@/lib/data";
+import { events, evtLabel } from "@/lib/data";
 
 const notGoing = ["Nelson Sami", "Carla Domingos"];
 
@@ -60,7 +60,7 @@ export default function EventDetailPage() {
       <Header />
       <div className="shell">
         <div className="featured" style={{ marginBottom: 24 }}>
-          <div className="featured-art" style={{ background: evtArt[event.t] }}>
+          <div className="featured-art" style={{ background: event.cover }}>
             <span className="featured-badge">{evtLabel[event.t]}</span>
           </div>
           <div className="featured-body">

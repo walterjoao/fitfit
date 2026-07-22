@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-import { evtArt, evtLabel, events } from "@/lib/data";
+import { evtLabel, events } from "@/lib/data";
 
 export default function EventsPage() {
   const [evtType, setEvtType] = useState<"all" | "run" | "class" | "workshop" | "competition">("all");
@@ -30,7 +30,7 @@ export default function EventsPage() {
           </div>
 
           <Link href={`/events/${featured.id}`} className="featured" style={{ textDecoration: "none", color: "inherit" }}>
-            <div className="featured-art" style={{ background: evtArt[featured.t] }}><span className="featured-badge">Em destaque</span></div>
+            <div className="featured-art" style={{ background: featured.cover }}><span className="featured-badge">Em destaque</span></div>
             <div className="featured-body">
               <span className="featured-type">{evtLabel[featured.t]}</span>
               <h3>{featured.n}</h3>
@@ -63,7 +63,7 @@ export default function EventsPage() {
           <div className="rich-grid">
             {filteredEvents.map((e) => (
               <Link href={`/events/${e.id}`} key={e.id} className="rich-card" style={{ textDecoration: "none", color: "inherit" }}>
-                <div className="rich-cover" style={{ background: evtArt[e.t] }}>
+                <div className="rich-cover" style={{ background: e.cover }}>
                   <span className="rich-badge">{evtLabel[e.t]}</span>
                   <span className="rich-cover-icon">🏆</span>
                 </div>
