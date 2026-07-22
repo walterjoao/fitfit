@@ -24,7 +24,7 @@ export default function ShopPage() {
 
   return (
     <>
-      <Sidebar active="shop" />
+      <Sidebar role="trainer" active="" />
       <Header />
       <div className="shell">
         <section className="panel active">

@@ -6,12 +6,16 @@ import type { Role } from "@/lib/ai/types";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const roleOptions: { key: Role; label: string }[] = [
-  { key: "athlete", label: "Atleta" },
-  { key: "trainer", label: "Personal Trainer" },
-  { key: "nutritionist", label: "Nutricionista" },
-  { key: "gym", label: "Ginásio" },
-];
+const roleLabel: Record<Role, string> = {
+  athlete: "Atleta",
+  trainer: "Personal Trainer",
+  nutritionist: "Nutricionista",
+  gym: "Ginásio",
+};
+
+function toAIRole(role: string): Role {
+  return role === "athlete" || role === "trainer" || role === "nutritionist" || role === "gym" ? role : "trainer";
+}
 
 export default function AIAssistant() {
   const pathname = usePathname();
@@ -27,6 +31,16 @@ export default function AIAssistant() {
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
   }, [messages, open]);
+
+  useEffect(() => {
+    function onOpen(e: Event) {
+      const detail = (e as CustomEvent).detail as { role?: string } | undefined;
+      if (detail?.role) setRole(toAIRole(detail.role));
+      setOpen(true);
+    }
+    window.addEventListener("fitpro:open-ai", onOpen);
+    return () => window.removeEventListener("fitpro:open-ai", onOpen);
+  }, []);
 
   if (pathname === "/" || pathname === "/login") return null;
 
@@ -61,13 +75,7 @@ export default function AIAssistant() {
               <p className="ai-panel-title">Assistente FitPro</p>
               <span className="ai-panel-sub">Sempre disponível para ajudar</span>
             </div>
-            <select className="ai-role-select" value={role} onChange={(e) => setRole(e.target.value as Role)}>
-              {roleOptions.map((r) => (
-                <option key={r.key} value={r.key}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
+            <span className="ai-role-select">{roleLabel[role]}</span>
             <button className="icon-btn" onClick={() => setOpen(false)} aria-label="Fechar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>

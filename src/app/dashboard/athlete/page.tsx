@@ -28,7 +28,7 @@ const statusLabel = { on: "Agendado", risk: "Em risco", paused: "Adiado" };
 export default function AthleteDashboard() {
   return (
     <>
-      <Sidebar active="dashboard" />
+      <Sidebar role="athlete" active="dashboard" />
       <Header />
       <div className="shell">
         <div className="page-head" style={{ paddingTop: 22 }}>

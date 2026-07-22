@@ -14,7 +14,7 @@ export default function LeaderboardPage() {
 
   return (
     <>
-      <Sidebar active="leaderboard" />
+      <Sidebar role="trainer" active="" />
       <Header />
       <div className="shell">
         <section className="panel active">

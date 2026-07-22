@@ -33,7 +33,7 @@ function initials(n: string) {
 export default function NutritionistDashboard() {
   return (
     <>
-      <Sidebar active="dashboard" />
+      <Sidebar role="nutritionist" active="dashboard" />
       <Header />
       <div className="shell">
         <div className="page-head" style={{ paddingTop: 22 }}>

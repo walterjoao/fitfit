@@ -100,7 +100,7 @@ function LineChart({ data }: { data: { m: string; v: number }[] }) {
 export default function Dashboard() {
   return (
     <>
-      <Sidebar active="dashboard" />
+      <Sidebar role="trainer" active="dashboard" />
       <Header />
       <div className="shell">
         <div className="page-head" style={{ paddingTop: 22 }}>

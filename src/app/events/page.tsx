@@ -18,7 +18,7 @@ export default function EventsPage() {
 
   return (
     <>
-      <Sidebar active="events" />
+      <Sidebar role="trainer" active="" />
       <Header />
       <div className="shell">
         <section className="panel active">
