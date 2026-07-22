@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { lbData, initials, trendGlyph } from "@/lib/data";
+import { slugify } from "@/lib/directory";
 
 type LbCat = keyof typeof lbData;
 
@@ -53,14 +55,14 @@ export default function LeaderboardPage() {
               const tier = i === 0 ? "gold" : i === 1 ? "silver" : "bronze";
               const medal = tier === "gold" ? "🥇" : tier === "silver" ? "🥈" : "🥉";
               return (
-                <div key={p.n} className={`p-card ${tier}`}>
+                <Link href={`/profile/${slugify(p.n)}`} key={p.n} className={`p-card ${tier}`} style={{ textDecoration: "none", color: "inherit" }}>
                   <span className="p-rank">#{i + 1}</span>
                   <div className="p-medal">{medal}</div>
                   <div className="p-name">{p.n}</div>
                   <div className="p-sub">{p.sub}</div>
                   <div className="p-xp tabular">{p.xp}</div>
                   <div className="p-xp-label">XP</div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -69,7 +71,7 @@ export default function LeaderboardPage() {
             {lb.list.map((row, i) => {
               const [name, xp, trend] = row;
               return (
-                <div key={name} className="lb-row">
+                <Link href={`/profile/${slugify(name)}`} key={name} className="lb-row" style={{ textDecoration: "none", color: "inherit" }}>
                   <span className="lb-pos tabular">{i + 4}</span>
                   <div className="lb-who">
                     <span className="lb-av">{initials(name)}</span>
@@ -77,7 +79,7 @@ export default function LeaderboardPage() {
                   </div>
                   <span className="lb-xp tabular">{xp} XP</span>
                   <span className={`lb-trend ${trend}`}>{trendGlyph(trend)}</span>
-                </div>
+                </Link>
               );
             })}
           </div>

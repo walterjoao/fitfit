@@ -148,22 +148,40 @@ export const evtLabel: Record<EventType, string> = {
   competition: "Competição",
 };
 
+export type EventDifficulty = "Fácil" | "Médio" | "Difícil" | "Extremo";
+
 export type EventItem = {
+  id: string;
   n: string;
   t: EventType;
   when: string;
   where: string;
   ppl: string;
   w: "week" | "month";
+  organizer: string;
+  durationMin: number;
+  rating: number;
+  reviews: number;
+  difficulty: EventDifficulty;
+  energy: "Baixa" | "Média" | "Alta";
+  points: number;
+  badge: string;
+  description: string;
+  food: boolean;
+  water: boolean;
+  equipment: string;
+  parking: boolean;
+  going: string[];
 };
 
 export const events: EventItem[] = [
-  { n: "Sunrise Run Club", t: "run", when: "Todos os Sábados · 06:30", where: "Marginal de Luanda", ppl: "58", w: "week" },
-  { n: "Workshop de Mobilidade", t: "workshop", when: "2 Ago · 18:00", where: "Kilamba, Luanda", ppl: "32", w: "month" },
-  { n: "Aula Aberta de Yoga", t: "class", when: "9 Ago · 08:00", where: "Ingombota, Luanda", ppl: "24", w: "month" },
-  { n: "Desafio 30 Dias de Consistência", t: "competition", when: "1 Set · 00:00", where: "Online", ppl: "410", w: "month" },
-  { n: "Corrida Noturna 10K", t: "run", when: "22 Ago · 20:00", where: "Talatona, Luanda", ppl: "96", w: "month" },
-  { n: "Aula de Funcional em Grupo", t: "class", when: "Todas as Terças · 07:00", where: "Viana, Luanda", ppl: "19", w: "week" },
+  { id: "hyrox", n: "HYROX Luanda 2026", t: "competition", when: "15 Ago · 07:00", where: "Talatona, Luanda", ppl: "240", w: "month", organizer: "FitPro Community", durationMin: 120, rating: 4.9, reviews: 88, difficulty: "Extremo", energy: "Alta", points: 800, badge: "Guerreiro HYROX", description: "A competição de fitness funcional mais desafiante de Luanda: 8 estações, 8km de corrida.", food: true, water: true, equipment: "Ténis de treino funcional", parking: true, going: ["Nelson Sami", "Ricardo Bumba", "Tiago Kiala", "André Katumba"] },
+  { id: "ev1", n: "Sunrise Run Club", t: "run", when: "Todos os Sábados · 06:30", where: "Marginal de Luanda", ppl: "58", w: "week", organizer: "FitPro Community", durationMin: 60, rating: 4.8, reviews: 42, difficulty: "Fácil", energy: "Média", points: 120, badge: "Madrugador", description: "Corrida em grupo ao nascer do sol pela marginal de Luanda, ritmo confortável para todos os níveis.", food: false, water: true, equipment: "Ténis de corrida", parking: true, going: ["Tiago Kiala", "Beatriz Chiapa", "Ricardo Bumba"] },
+  { id: "ev2", n: "Workshop de Mobilidade", t: "workshop", when: "2 Ago · 18:00", where: "Kilamba, Luanda", ppl: "32", w: "month", organizer: "Ana Ferreira", durationMin: 90, rating: 4.7, reviews: 18, difficulty: "Fácil", energy: "Baixa", points: 80, badge: "Flexível", description: "Workshop prático sobre mobilidade articular e prevenção de lesões.", food: false, water: true, equipment: "Tapete de yoga", parking: true, going: ["Marta Neto", "Diana Sacramento"] },
+  { id: "ev3", n: "Aula Aberta de Yoga", t: "class", when: "9 Ago · 08:00", where: "Ingombota, Luanda", ppl: "24", w: "month", organizer: "Diana Sacramento", durationMin: 60, rating: 4.9, reviews: 27, difficulty: "Fácil", energy: "Baixa", points: 80, badge: "Zen", description: "Sessão de yoga ao ar livre aberta a toda a comunidade FitPro.", food: false, water: true, equipment: "Tapete de yoga", parking: false, going: ["Inês Gonçalves"] },
+  { id: "ev4", n: "Desafio 30 Dias de Consistência", t: "competition", when: "1 Set · 00:00", where: "Online", ppl: "410", w: "month", organizer: "FitPro Community", durationMin: 0, rating: 4.9, reviews: 156, difficulty: "Médio", energy: "Alta", points: 500, badge: "Imparável", description: "Desafio de 30 dias consecutivos de treino, com leaderboard e prémios semanais.", food: false, water: false, equipment: "Nenhum", parking: false, going: ["Tiago Kiala", "André Katumba", "Nelson Sami", "Rui Ferreira"] },
+  { id: "ev5", n: "Corrida Noturna 10K", t: "run", when: "22 Ago · 20:00", where: "Talatona, Luanda", ppl: "96", w: "month", organizer: "FitPro Community", durationMin: 75, rating: 4.6, reviews: 61, difficulty: "Difícil", energy: "Alta", points: 250, badge: "Corredor Noturno", description: "Corrida de 10km iluminada pela cidade, com hidratação a cada 2,5km.", food: true, water: true, equipment: "Ténis de corrida, colete refletor", parking: true, going: ["Ricardo Bumba", "Beatriz Chiapa"] },
+  { id: "ev6", n: "Aula de Funcional em Grupo", t: "class", when: "Todas as Terças · 07:00", where: "Viana, Luanda", ppl: "19", w: "week", organizer: "Nelson Sami", durationMin: 45, rating: 4.8, reviews: 33, difficulty: "Médio", energy: "Alta", points: 100, badge: "Funcional", description: "Circuito funcional de alta intensidade em grupo, adaptável a qualquer nível.", food: false, water: true, equipment: "Nenhum", parking: true, going: ["Diana Sacramento", "Marta Neto", "Carla Domingos"] },
 ];
 
 export const initials = (n: string) =>

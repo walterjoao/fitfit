@@ -1,10 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSession, clearSession } from "@/lib/session";
 import { settingsPath, billingPath, financePath } from "@/lib/accountData";
-import { getNotifications, type Notification } from "@/lib/notifications";
+import { getNotifications, markRead, removeNotification, type Notification } from "@/lib/notifications";
+
+const workoutIcon = <path d="M6.5 6.5 3 10l3.5 3.5M17.5 6.5 21 10l-3.5 3.5M14 4l-4 16" />;
+const mealIcon = <path d="M12 3c-3 2-5 5-5 9a5 5 0 0 0 10 0c0-4-2-7-5-9Z" />;
+const eventIcon = <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>;
+const clientIcon = <><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 8h4M19 6v4" /></>;
+const productIcon = <><path d="M3 9 12 4l9 5-9 5-9-5Z" /><path d="M3 9v6l9 5 9-5V9" /></>;
+const goalIcon = <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r=".6" /></>;
+const calendarIcon = <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>;
+
+const createMenuByRole: Record<string, { label: string; href: string; icon: ReactNode }[]> = {
+  athlete: [
+    { label: "Treino Pessoal", href: "/dashboard/athlete/workouts/new", icon: workoutIcon },
+    { label: "Objetivo", href: "/dashboard/athlete/goals", icon: goalIcon },
+    { label: "Evento", href: "/events", icon: eventIcon },
+  ],
+  trainer: [
+    { label: "Programa de Treino", href: "/programs", icon: workoutIcon },
+    { label: "Cliente", href: "/clients", icon: clientIcon },
+    { label: "Evento", href: "/events", icon: eventIcon },
+    { label: "Disponibilidade", href: "/calendar", icon: calendarIcon },
+  ],
+  nutritionist: [
+    { label: "Cliente", href: "/dashboard/nutritionist/clients", icon: clientIcon },
+    { label: "Plano Alimentar", href: "/dashboard/nutritionist/meal-plans", icon: mealIcon },
+    { label: "Consulta", href: "/dashboard/nutritionist/appointments", icon: calendarIcon },
+  ],
+  gym: [
+    { label: "Membro", href: "/dashboard/gym/members", icon: clientIcon },
+    { label: "Aula", href: "/dashboard/gym/classes", icon: eventIcon },
+    { label: "Evento", href: "/events", icon: eventIcon },
+    { label: "Plano de Subscrição", href: "/dashboard/gym/subscriptions", icon: productIcon },
+  ],
+  shop: [
+    { label: "Produto", href: "/dashboard/shop/products", icon: productIcon },
+    { label: "Promoção", href: "/dashboard/shop/products", icon: productIcon },
+    { label: "Evento", href: "/events", icon: eventIcon },
+  ],
+  admin: [
+    { label: "Membro", href: "/dashboard/gym/members", icon: clientIcon },
+    { label: "Produto (Loja)", href: "/dashboard/shop/products", icon: productIcon },
+    { label: "Evento", href: "/events", icon: eventIcon },
+  ],
+};
 
 const roleLabel: Record<string, string> = {
   admin: "Admin",
@@ -91,40 +134,44 @@ export default function Header() {
                 <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.7 21a2 2 0 0 1-3.4 0" />
               </svg>
-              <span className="dot" />
+              {liveNotifications.some((n) => !n.read) && <span className="dot" />}
             </button>
             <div className={`menu notif-panel ${openMenu === "notif" ? "open" : ""}`}>
               <div className="notif-head">Notificações</div>
-              {liveNotifications.map((n) => (
-                <div className="notif-item" key={n.id}>
+              {liveNotifications.slice(0, 5).map((n) => (
+                <div className="notif-item" key={n.id} style={{ opacity: n.read ? 0.6 : 1, cursor: "pointer" }}>
                   <span className="notif-dot" style={{ background: n.tone === "good" ? "var(--good)" : n.tone === "bad" ? "var(--bad)" : "var(--accent)" }} />
-                  <div className="notif-body">
+                  <Link
+                    href={n.href || "/notifications"}
+                    className="notif-body"
+                    style={{ flex: 1, textDecoration: "none", color: "inherit" }}
+                    onClick={() => {
+                      markRead(n.id);
+                      setOpenMenu(null);
+                    }}
+                  >
                     <p>{n.message}</p>
                     <span>{n.time}</span>
-                  </div>
+                  </Link>
+                  <button
+                    className="icon-action"
+                    style={{ width: 22, height: 22, border: "none" }}
+                    title="Remover"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeNotification(n.id);
+                    }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                  </button>
                 </div>
               ))}
-              <div className="notif-item">
-                <span className="notif-dot" style={{ background: "var(--good)" }} />
-                <div className="notif-body">
-                  <p><b>Rui Ferreira</b> completou o teu plano de treino desta semana.</p>
-                  <span>há 12 min</span>
-                </div>
-              </div>
-              <div className="notif-item">
-                <span className="notif-dot" style={{ background: "var(--accent)" }} />
-                <div className="notif-body">
-                  <p>Subiste para <b>#8</b> no leaderboard de Consistência.</p>
-                  <span>há 2 h</span>
-                </div>
-              </div>
-              <div className="notif-item">
-                <span className="notif-dot" style={{ background: "var(--bad)" }} />
-                <div className="notif-body">
-                  <p>Pagamento de <b>Inês Gonçalves</b> falhou — ação necessária.</p>
-                  <span>ontem</span>
-                </div>
-              </div>
+              {liveNotifications.length === 0 && (
+                <div className="notif-item"><div className="notif-body"><p style={{ color: "var(--text-faint)" }}>Sem notificações.</p></div></div>
+              )}
+              <Link href="/notifications" className="menu-item" style={{ justifyContent: "center", fontWeight: 700 }} onClick={() => setOpenMenu(null)}>
+                Ver todas
+              </Link>
             </div>
           </div>
 
@@ -143,27 +190,12 @@ export default function Header() {
             </button>
             <div className={`menu ${openMenu === "create" ? "open" : ""}`}>
               <div className="menu-cap">Novo</div>
-              <button className="menu-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5 3 10l3.5 3.5M17.5 6.5 21 10l-3.5 3.5M14 4l-4 16" /></svg>
-                Criar treino
-              </button>
-              <button className="menu-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3c-3 2-5 5-5 9a5 5 0 0 0 10 0c0-4-2-7-5-9Z" /></svg>
-                Criar plano alimentar
-              </button>
-              <button className="menu-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
-                Criar evento
-              </button>
-              <div className="menu-divider" />
-              <button className="menu-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 8h4M19 6v4" /></svg>
-                Adicionar cliente
-              </button>
-              <button className="menu-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9 12 4l9 5-9 5-9-5Z" /><path d="M3 9v6l9 5 9-5V9" /></svg>
-                Adicionar produto
-              </button>
+              {(createMenuByRole[session?.role || "athlete"] || createMenuByRole.athlete).map((item) => (
+                <Link key={item.label} href={item.href} className="menu-item" onClick={() => setOpenMenu(null)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{item.icon}</svg>
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 
