@@ -17,6 +17,8 @@ export type DirProfile = {
   specialties?: string[];
   certifications?: string[];
   facilities?: string[];
+  gallery?: string[];
+  recentActivity?: string[];
   reviewsList: { author: string; text: string; rating: number }[];
 };
 
@@ -27,6 +29,8 @@ export const directory: Record<string, DirProfile> = {
     cover: bgImage(portraitImages.trainer[0]), followers: 1240, following: 86, rating: 4.9, reviews: 84, whatsapp: "+244 923 000 001",
     specialties: ["Força e hipertrofia", "Recomposição corporal", "Treino funcional"],
     certifications: ["Personal Trainer Certificado (IFBB)", "Especialista em Nutrição Desportiva"],
+    gallery: [bgImage(unsplashImages.strength[1]), bgImage(unsplashImages.strength[2]), bgImage(unsplashImages.functional[0])],
+    recentActivity: ["Publicou um novo treino: \"Muscle Growth Program\"", "Ganhou uma nova avaliação de 5⭐", "Abriu novas vagas para esta semana"],
     reviewsList: [
       { author: "Carla Domingos", text: "A Ana mudou completamente a minha relação com o treino. Recomendo!", rating: 5 },
       { author: "Rui Ferreira", text: "Profissional excelente, muito atenta à técnica.", rating: 5 },
@@ -38,6 +42,8 @@ export const directory: Record<string, DirProfile> = {
     cover: bgImage(portraitImages.nutritionist[0]), followers: 640, following: 40, rating: 4.9, reviews: 46, whatsapp: "+244 923 000 002",
     specialties: ["Nutrição desportiva", "Perda de peso", "Ganho de massa muscular"],
     certifications: ["Ordem dos Nutricionistas de Angola", "Pós-graduação em Nutrição Clínica"],
+    gallery: [bgImage(unsplashImages.nutrition[1]), bgImage(unsplashImages.nutrition[2]), bgImage(unsplashImages.meals[0])],
+    recentActivity: ["Publicou uma nova dica de nutrição", "Atualizou o plano alimentar de um cliente", "Ganhou uma nova avaliação de 5⭐"],
     reviewsList: [
       { author: "Marta Neto", text: "Plano alimentar fácil de seguir e resultados reais.", rating: 5 },
     ],
@@ -47,6 +53,8 @@ export const directory: Record<string, DirProfile> = {
     bio: "O ginásio mais completo de Talatona: sala de musculação, cardio, aulas de grupo e piscina.",
     cover: bgImage(unsplashImages.gym[2]), followers: 3400, following: 12, rating: 4.7, reviews: 312,
     facilities: ["Sala de musculação", "Zona de cardio", "Aulas de grupo", "Balneários", "Estacionamento"],
+    gallery: [bgImage(unsplashImages.gym[0]), bgImage(unsplashImages.gym[1]), bgImage(unsplashImages.crossfit[0])],
+    recentActivity: ["Adicionou uma nova aula: \"Treino Funcional\"", "João começou a treinar neste ginásio", "Renovou o equipamento da sala de musculação"],
     reviewsList: [
       { author: "Tiago Kiala", text: "Ótimas instalações e staff simpático.", rating: 5 },
     ],
@@ -55,6 +63,7 @@ export const directory: Record<string, DirProfile> = {
     id: "nutrimax-luanda", name: "NutriMax Luanda", role: "shop", location: "Luanda",
     bio: "Loja parceira FitPro especializada em suplementação desportiva de alta qualidade.",
     cover: bgImage(unsplashImages.nutrition[0]), followers: 890, following: 5, rating: 4.6, reviews: 120,
+    recentActivity: ["Adicionou 3 novos produtos", "Promoção de verão ativa", "Ganhou uma nova avaliação de 5⭐"],
     reviewsList: [
       { author: "Ricardo Bumba", text: "Entrega rápida e produtos originais.", rating: 5 },
     ],
@@ -63,6 +72,7 @@ export const directory: Record<string, DirProfile> = {
     id: "tiago-kiala", name: "Tiago Kiala", role: "athlete", location: "Viana, Luanda",
     bio: "Atleta focado em consistência — 42 sessões seguidas e a contar.",
     cover: bgImage(portraitImages.athlete[0]), followers: 210, following: 64, rating: 4.8, reviews: 12,
+    recentActivity: ["Completou o treino \"Condicionamento Físico\"", "Bateu um novo recorde pessoal", "Juntou-se ao evento Sunrise Run Club"],
     reviewsList: [],
   },
 };
