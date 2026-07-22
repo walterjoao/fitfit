@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import ProgressSubNav from "@/components/ProgressSubNav";
@@ -12,8 +13,6 @@ export default function ProgressBodyPage() {
   const { ready } = useRoleGuard("athlete");
   const list = useLocalList<MeasurementEntry>("fitpro_measurements", seedMeasurements);
   const [entries, setEntries] = useState<MeasurementEntry[]>([]);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [form, setForm] = useState({ chest: "", waist: "", arm: "", leg: "" });
 
   useEffect(() => {
     setEntries(list.getAll());
@@ -21,35 +20,6 @@ export default function ProgressBodyPage() {
   }, []);
 
   if (!ready) return null;
-
-  function addEntry() {
-    const entry: MeasurementEntry = {
-      id: Math.random().toString(36).slice(2),
-      date: new Date().toISOString().slice(0, 10),
-      chest: Number(form.chest) || 0,
-      waist: Number(form.waist) || 0,
-      arm: Number(form.arm) || 0,
-      leg: Number(form.leg) || 0,
-    };
-    setEntries(list.add(entry));
-    setForm({ chest: "", waist: "", arm: "", leg: "" });
-  }
-
-  function remove(id: string) {
-    setEntries(list.remove(id));
-  }
-
-  function startEdit(e: MeasurementEntry) {
-    setEditing(e.id);
-    setForm({ chest: String(e.chest), waist: String(e.waist), arm: String(e.arm), leg: String(e.leg) });
-  }
-
-  function saveEdit() {
-    if (!editing) return;
-    setEntries(list.update(editing, { chest: Number(form.chest), waist: Number(form.waist), arm: Number(form.arm), leg: Number(form.leg) }));
-    setEditing(null);
-    setForm({ chest: "", waist: "", arm: "", leg: "" });
-  }
 
   const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
   const latest = sorted[0];
@@ -83,27 +53,12 @@ export default function ProgressBodyPage() {
           </div>
         )}
 
-        <div className="dash-row">
-          <div className="dash-panel" style={{ padding: 24 }}>
-            <p className="field-label" style={{ marginBottom: 10 }}>{editing ? "Editar medição" : "Adicionar nova medição"}</p>
-            <div className="form-grid" style={{ marginBottom: 14 }}>
-              <label className="field"><span className="field-label">Peito (cm)</span><input className="field-input" type="number" value={form.chest} onChange={(e) => setForm((f) => ({ ...f, chest: e.target.value }))} /></label>
-              <label className="field"><span className="field-label">Cintura (cm)</span><input className="field-input" type="number" value={form.waist} onChange={(e) => setForm((f) => ({ ...f, waist: e.target.value }))} /></label>
-              <label className="field"><span className="field-label">Braço (cm)</span><input className="field-input" type="number" value={form.arm} onChange={(e) => setForm((f) => ({ ...f, arm: e.target.value }))} /></label>
-              <label className="field"><span className="field-label">Perna (cm)</span><input className="field-input" type="number" value={form.leg} onChange={(e) => setForm((f) => ({ ...f, leg: e.target.value }))} /></label>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {editing ? (
-                <>
-                  <button className="auth-submit" style={{ maxWidth: 160 }} onClick={saveEdit}>Guardar Edição</button>
-                  <button className="btn btn-ghost" onClick={() => { setEditing(null); setForm({ chest: "", waist: "", arm: "", leg: "" }); }}>Cancelar</button>
-                </>
-              ) : (
-                <button className="auth-submit" style={{ maxWidth: 160 }} onClick={addEntry}>Adicionar Medição</button>
-              )}
-            </div>
-          </div>
+        <div className="ai-box" style={{ marginBottom: 20 }}>
+          <div className="ai-icon">📏</div>
+          <p>Para adicionar, editar ou remover medições e fotos de transformação, vai a <Link href="/dashboard/athlete/settings" style={{ color: "var(--accent-ink)", fontWeight: 700 }}>Definições → Medidas</Link>.</p>
+        </div>
 
+        <div className="dash-row">
           <div className="dash-panel">
             <div className="dash-panel-head"><h2>Histórico</h2><span>{sorted.length}</span></div>
             <div className="dash-panel-body">
@@ -112,12 +67,6 @@ export default function ProgressBodyPage() {
                   <div className="tx-info">
                     <div className="tx-label">{new Date(e.date).toLocaleDateString("pt-PT")}</div>
                     <div className="tx-sub">Peito {e.chest}cm · Cintura {e.waist}cm · Braço {e.arm}cm · Perna {e.leg}cm</div>
-                  </div>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button className="btn btn-ghost btn-sm" onClick={() => startEdit(e)}>Editar</button>
-                    <button className="icon-action" title="Remover" onClick={() => remove(e.id)}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                    </button>
                   </div>
                 </div>
               ))}

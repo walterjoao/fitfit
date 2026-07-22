@@ -6,8 +6,8 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { useRoleGuard, clearSession } from "@/lib/session";
 import {
-  getPersonalInfo, savePersonalInfo, type PersonalInfo,
-  getFitnessConfig, saveFitnessConfig, type FitnessConfig,
+  getPersonalInfo, savePersonalInfo, isValidWhatsapp, type PersonalInfo,
+  getFitnessConfig, saveFitnessConfig, goalOptionsMulti, levelOptionsExt, trainingTypeOptions, weekDayOptions, type FitnessConfig,
   getPreferences, savePreferences, type Preferences,
   getNotifSettings, saveNotifSettings, notifCategoryLabel, type NotifCategory, type NotifSettings,
   getPrivacy, savePrivacy, type PrivacySettings,
@@ -17,8 +17,11 @@ import {
   getCards, addCard, removeCard, setDefaultCard,
   roleCatalog, getRoleActivations, requestRoleActivation, pauseRole, removeRole,
 } from "@/lib/athleteSettingsData";
-import { getProfileOverride, saveProfileOverride, levelOptions } from "@/lib/athleteProfileData";
-import { seedWeightLog, seedMeasurements } from "@/lib/progressData";
+import { getProfileOverride, saveProfileOverride } from "@/lib/athleteProfileData";
+import { seedMeasurements, seedBodyGallery, type MeasurementEntry, type BodyGalleryEntry, type WeightEntry } from "@/lib/progressData";
+import { useLocalList } from "@/lib/progressStore";
+import { buildSimplePdf, downloadBlob, downloadCsv } from "@/lib/fileExport";
+import { seedWeightLog as seedWeight } from "@/lib/progressData";
 
 const sections = [
   { key: "perfil", label: "Perfil", icon: "👤" },
@@ -71,8 +74,29 @@ export default function AthleteSettingsPage() {
   const [roleActivations, setRoleActivations] = useState(getRoleActivations());
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  const weightList = useLocalList<WeightEntry>("fitpro_weight_log", seedWeight);
+  const measurementList = useLocalList<MeasurementEntry>("fitpro_measurements", seedMeasurements);
+  const galleryList = useLocalList<BodyGalleryEntry>("fitpro_body_gallery", seedBodyGallery);
+  const [weights, setWeights] = useState<WeightEntry[]>([]);
+  const [measurements, setMeasurements] = useState<MeasurementEntry[]>([]);
+  const [gallery, setGallery] = useState<BodyGalleryEntry[]>([]);
+  const [newWeight, setNewWeight] = useState("");
+  const [measForm, setMeasForm] = useState({ chest: "", waist: "", arm: "", leg: "" });
+  const [editingMeasurement, setEditingMeasurement] = useState<string | null>(null);
+  const [galleryPhotos, setGalleryPhotos] = useState<{ front?: string; side?: string; back?: string }>({});
+  const [whatsappError, setWhatsappError] = useState("");
+  const [exportStatus, setExportStatus] = useState<Record<string, "idle" | "preparing" | "ready">>({});
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [cardForm, setCardForm] = useState({ brand: "Visa", last4: "", expiry: "" });
+  const [cardError, setCardError] = useState("");
+  const [subDetails, setSubDetails] = useState<string | null>(null);
+
   useEffect(() => {
     setTwoFA(get2FA());
+    setWeights(weightList.getAll());
+    setMeasurements(measurementList.getAll());
+    setGallery(galleryList.getAll());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!ready || !session) return null;
@@ -84,6 +108,122 @@ export default function AthleteSettingsPage() {
 
   function statusOf(role: (typeof roleCatalog)[number]["key"]) {
     return roleActivations.find((r) => r.role === role)?.status || "inactive";
+  }
+
+  function toggleMulti(list: string[], value: string) {
+    return list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
+  }
+
+  function onPhotoUpload(field: "front" | "side" | "back", file: File | null) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setGalleryPhotos((p) => ({ ...p, [field]: reader.result as string }));
+    reader.readAsDataURL(file);
+  }
+
+  function saveGalleryEntry() {
+    if (!galleryPhotos.front && !galleryPhotos.side && !galleryPhotos.back) return;
+    const entry: BodyGalleryEntry = {
+      id: Math.random().toString(36).slice(2),
+      date: new Date().toISOString().slice(0, 10),
+      weightKg: weights[0]?.kg,
+      ...galleryPhotos,
+    };
+    setGallery(galleryList.add(entry));
+    setGalleryPhotos({});
+  }
+
+  function removeGalleryEntry(id: string) {
+    setGallery(galleryList.remove(id));
+  }
+
+  function addWeight() {
+    const kg = Number(newWeight);
+    if (!kg) return;
+    setWeights(weightList.add({ id: Math.random().toString(36).slice(2), date: new Date().toISOString().slice(0, 10), kg }));
+    setNewWeight("");
+  }
+
+  function removeWeight(id: string) {
+    setWeights(weightList.remove(id));
+  }
+
+  function addOrSaveMeasurement() {
+    if (editingMeasurement) {
+      setMeasurements(measurementList.update(editingMeasurement, {
+        chest: Number(measForm.chest) || 0, waist: Number(measForm.waist) || 0, arm: Number(measForm.arm) || 0, leg: Number(measForm.leg) || 0,
+      }));
+      setEditingMeasurement(null);
+    } else {
+      setMeasurements(measurementList.add({
+        id: Math.random().toString(36).slice(2), date: new Date().toISOString().slice(0, 10),
+        chest: Number(measForm.chest) || 0, waist: Number(measForm.waist) || 0, arm: Number(measForm.arm) || 0, leg: Number(measForm.leg) || 0,
+      }));
+    }
+    setMeasForm({ chest: "", waist: "", arm: "", leg: "" });
+  }
+
+  function startEditMeasurement(m: MeasurementEntry) {
+    setEditingMeasurement(m.id);
+    setMeasForm({ chest: String(m.chest), waist: String(m.waist), arm: String(m.arm), leg: String(m.leg) });
+  }
+
+  function removeMeasurement(id: string) {
+    setMeasurements(measurementList.remove(id));
+  }
+
+  function submitCard() {
+    if (!/^\d{4}$/.test(cardForm.last4)) {
+      setCardError("Introduz os últimos 4 dígitos do cartão.");
+      return;
+    }
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardForm.expiry)) {
+      setCardError("Formato de validade inválido (MM/AA).");
+      return;
+    }
+    setCardError("");
+    setCards(addCard(cardForm.brand, cardForm.last4, cardForm.expiry));
+    setCardForm({ brand: "Visa", last4: "", expiry: "" });
+    setShowAddCard(false);
+  }
+
+  function downloadInvoicePdf(inv: (typeof invoices)[number]) {
+    const blob = buildSimplePdf("Fatura FitPro", [
+      `Nº Fatura: ${inv.id}`, `Data: ${inv.date}`, `Serviço: ${inv.service}`, `Valor: ${inv.amount}`, `Estado: ${inv.status}`, "", "Obrigado por usares o FitPro.",
+    ]);
+    downloadBlob(blob, `${inv.id}.pdf`);
+  }
+
+  function runExport(key: string, action: () => void) {
+    setExportStatus((s) => ({ ...s, [key]: "preparing" }));
+    setTimeout(() => {
+      action();
+      setExportStatus((s) => ({ ...s, [key]: "ready" }));
+      setTimeout(() => setExportStatus((s) => ({ ...s, [key]: "idle" })), 2500);
+    }, 700);
+  }
+
+  function exportProfilePdf() {
+    runExport("profile-pdf", () => {
+      const blob = buildSimplePdf("Dados Pessoais — FitPro", [
+        `Nome: ${session!.name}`, `Email: ${session!.email}`, `Idade: ${personal.age}`, `Altura: ${personal.heightCm}cm`,
+        `Telefone: ${personal.phone}`, `WhatsApp: ${personal.whatsappCountryCode} ${personal.whatsappNumber}`, `Morada: ${personal.address}`,
+      ]);
+      downloadBlob(blob, "fitpro-dados-pessoais.pdf");
+    });
+  }
+
+  function exportFitnessCsv() {
+    runExport("fitness-csv", () => {
+      downloadCsv("fitpro-historico-fitness.csv", ["Data", "Peso (kg)"], weights.map((w) => [w.date, w.kg]));
+    });
+  }
+
+  function exportInvoicesPdf() {
+    runExport("invoices-pdf", () => {
+      const blob = buildSimplePdf("Faturas — FitPro", invoices.map((inv) => `${inv.date} · ${inv.service} · ${inv.amount} · ${inv.status}`));
+      downloadBlob(blob, "fitpro-faturas.pdf");
+    });
   }
 
   const maxSpend = Math.max(...monthlySpending.map((m) => m.kz));
@@ -155,6 +295,7 @@ export default function AthleteSettingsPage() {
                 <div className="settings-section-head"><h2>Informação Pessoal</h2><p>Idade, altura, contacto e localização.</p></div>
                 <div className="form-grid">
                   <label className="field"><span className="field-label">Idade</span><input className="field-input" type="number" value={personal.age} onChange={(e) => setPersonal((p) => ({ ...p, age: Number(e.target.value) }))} /></label>
+                  <label className="field"><span className="field-label">Data de nascimento</span><input className="field-input" type="date" value={personal.birthDate} onChange={(e) => setPersonal((p) => ({ ...p, birthDate: e.target.value }))} /></label>
                   <label className="field"><span className="field-label">Género (opcional)</span>
                     <select className="field-input" value={personal.gender} onChange={(e) => setPersonal((p) => ({ ...p, gender: e.target.value }))}>
                       <option>Prefiro não dizer</option><option>Masculino</option><option>Feminino</option><option>Outro</option>
@@ -163,10 +304,48 @@ export default function AthleteSettingsPage() {
                   <label className="field"><span className="field-label">Altura (cm)</span><input className="field-input" type="number" value={personal.heightCm} onChange={(e) => setPersonal((p) => ({ ...p, heightCm: Number(e.target.value) }))} /></label>
                   <label className="field"><span className="field-label">Telefone</span><input className="field-input" value={personal.phone} onChange={(e) => setPersonal((p) => ({ ...p, phone: e.target.value }))} /></label>
                   <label className="field"><span className="field-label">Email</span><input className="field-input" defaultValue={session.email} readOnly title="Alterar email requer verificação" /></label>
-                  <label className="field"><span className="field-label">Morada / Localização</span><input className="field-input" value={personal.address} onChange={(e) => setPersonal((p) => ({ ...p, address: e.target.value }))} /></label>
+                  <label className="field" style={{ gridColumn: "1 / -1" }}><span className="field-label">Morada / Localização</span><input className="field-input" value={personal.address} onChange={(e) => setPersonal((p) => ({ ...p, address: e.target.value }))} /></label>
                 </div>
+
+                <p className="field-label" style={{ margin: "18px 0 10px" }}>WhatsApp</p>
+                <div className="form-grid" style={{ marginBottom: 10 }}>
+                  <label className="field" style={{ maxWidth: 110 }}>
+                    <span className="field-label">Indicativo</span>
+                    <input className="field-input" value={personal.whatsappCountryCode} onChange={(e) => setPersonal((p) => ({ ...p, whatsappCountryCode: e.target.value }))} />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Número</span>
+                    <input
+                      className="field-input"
+                      value={personal.whatsappNumber}
+                      onChange={(e) => { setPersonal((p) => ({ ...p, whatsappNumber: e.target.value })); setWhatsappError(""); }}
+                      placeholder="923000000"
+                    />
+                  </label>
+                </div>
+                {whatsappError && <p style={{ fontSize: 12, color: "var(--bad)", marginBottom: 10 }}>{whatsappError}</p>}
+                <div className="notif-row" style={{ borderBottom: "none", paddingTop: 4 }}>
+                  <div>
+                    <div className="notif-row-label">Mostrar WhatsApp publicamente</div>
+                    <div className="notif-row-sub">Visível no teu perfil público para contacto direto</div>
+                  </div>
+                  <Toggle checked={personal.whatsappVisible} onChange={(v) => setPersonal((p) => ({ ...p, whatsappVisible: v }))} />
+                </div>
+
                 <div style={{ marginTop: 16, display: "flex", alignItems: "center" }}>
-                  <button className="btn btn-primary btn-sm" onClick={() => { savePersonalInfo(personal); flash(); }}>Guardar</button>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => {
+                      if (!isValidWhatsapp(personal.whatsappNumber)) {
+                        setWhatsappError("Número de WhatsApp inválido — usa apenas dígitos (7 a 12).");
+                        return;
+                      }
+                      savePersonalInfo(personal);
+                      flash();
+                    }}
+                  >
+                    Guardar
+                  </button>
                   <SavedFlash show={saved} />
                 </div>
               </div>
@@ -175,30 +354,44 @@ export default function AthleteSettingsPage() {
             {section === "fitness" && (
               <div className="dash-panel" style={{ padding: 22 }}>
                 <div className="settings-section-head"><h2>Objetivos de Fitness</h2><p>O teu objetivo atual, nível e preferências de treino.</p></div>
-                <div className="form-grid">
-                  <label className="field">
-                    <span className="field-label">Objetivo</span>
-                    <select className="field-input" value={fitness.goal} onChange={(e) => setFitness((f) => ({ ...f, goal: e.target.value }))}>
-                      <option>Perder peso</option><option>Ganhar massa</option><option>Manter</option><option>Personalizado</option>
-                    </select>
-                  </label>
-                  <label className="field">
-                    <span className="field-label">Nível de experiência</span>
-                    <select className="field-input" value={fitness.level} onChange={(e) => setFitness((f) => ({ ...f, level: e.target.value }))}>
-                      {levelOptions.map((l) => <option key={l}>{l}</option>)}
-                    </select>
-                  </label>
-                  <label className="field">
-                    <span className="field-label">Frequência de treino (dias/semana)</span>
-                    <input className="field-input" type="number" min={1} max={7} value={fitness.frequency} onChange={(e) => setFitness((f) => ({ ...f, frequency: Number(e.target.value) }))} />
-                  </label>
-                  <label className="field">
-                    <span className="field-label">Tipo de treino preferido</span>
-                    <select className="field-input" value={fitness.trainingType} onChange={(e) => setFitness((f) => ({ ...f, trainingType: e.target.value }))}>
-                      <option>Força</option><option>Cardio</option><option>CrossFit</option><option>Yoga</option><option>Funcional</option>
-                    </select>
-                  </label>
+
+                <p className="field-label" style={{ marginBottom: 10 }}>Objetivo (seleção múltipla)</p>
+                <div className="pill-row" style={{ marginBottom: 20 }}>
+                  {goalOptionsMulti.map((g) => (
+                    <button key={g} className={`pill ${fitness.goals.includes(g) ? "active" : ""}`} onClick={() => setFitness((f) => ({ ...f, goals: toggleMulti(f.goals, g) }))}>
+                      {fitness.goals.includes(g) ? "✅" : ""} {g}
+                    </button>
+                  ))}
                 </div>
+
+                <p className="field-label" style={{ marginBottom: 10 }}>Nível de experiência</p>
+                <div className="pill-row" style={{ marginBottom: 20 }}>
+                  {levelOptionsExt.map((l) => (
+                    <button key={l} className={`pill ${fitness.level === l ? "active" : ""}`} onClick={() => setFitness((f) => ({ ...f, level: l }))}>{l}</button>
+                  ))}
+                </div>
+
+                <p className="field-label" style={{ marginBottom: 10 }}>Frequência de treino</p>
+                <input className="field-input" type="number" min={1} max={7} style={{ maxWidth: 120, marginBottom: 14 }} value={fitness.frequency} onChange={(e) => setFitness((f) => ({ ...f, frequency: Number(e.target.value) }))} />
+
+                <p className="field-label" style={{ marginBottom: 10 }}>Dias preferidos de treino</p>
+                <div className="day-picker" style={{ marginBottom: 20 }}>
+                  {weekDayOptions.map((d) => (
+                    <button key={d} className={`day-toggle ${fitness.preferredDays.includes(d) ? "on" : ""}`} onClick={() => setFitness((f) => ({ ...f, preferredDays: toggleMulti(f.preferredDays, d) }))}>
+                      {d.slice(0, 3)}
+                    </button>
+                  ))}
+                </div>
+
+                <p className="field-label" style={{ marginBottom: 10 }}>Tipo de treino preferido (seleção múltipla)</p>
+                <div className="pill-row">
+                  {trainingTypeOptions.map((t) => (
+                    <button key={t} className={`pill ${fitness.trainingTypes.includes(t) ? "active" : ""}`} onClick={() => setFitness((f) => ({ ...f, trainingTypes: toggleMulti(f.trainingTypes, t) }))}>
+                      {fitness.trainingTypes.includes(t) ? "✅" : ""} {t}
+                    </button>
+                  ))}
+                </div>
+
                 <div style={{ marginTop: 16, display: "flex", alignItems: "center" }}>
                   <button className="btn btn-primary btn-sm" onClick={() => { saveFitnessConfig(fitness); flash(); }}>Guardar</button>
                   <SavedFlash show={saved} />
@@ -208,26 +401,91 @@ export default function AthleteSettingsPage() {
 
             {section === "medidas" && (
               <>
-                <div className="dash-panel" style={{ padding: 22, marginBottom: 20 }}>
-                  <div className="settings-section-head"><h2>Medidas</h2><p>Peso, medidas corporais e histórico. Regista novas entradas em Progresso.</p></div>
-                  <div className="stat-grid">
-                    <div className="stat-card"><div className="stat-top"><span className="stat-label">Peso atual</span></div><div className="stat-value tabular">{seedWeightLog[seedWeightLog.length - 1]?.kg}kg</div></div>
-                    <div className="stat-card"><div className="stat-top"><span className="stat-label">Peito</span></div><div className="stat-value tabular">{seedMeasurements[seedMeasurements.length - 1]?.chest}cm</div></div>
-                    <div className="stat-card"><div className="stat-top"><span className="stat-label">Cintura</span></div><div className="stat-value tabular">{seedMeasurements[seedMeasurements.length - 1]?.waist}cm</div></div>
-                    <div className="stat-card"><div className="stat-top"><span className="stat-label">Braço</span></div><div className="stat-value tabular">{seedMeasurements[seedMeasurements.length - 1]?.arm}cm</div></div>
-                  </div>
-                  <Link href="/dashboard/athlete/progress/body" className="btn btn-primary btn-sm" style={{ marginTop: 16, display: "inline-block" }}>Adicionar Nova Medição</Link>
-                </div>
-                <div className="dash-panel">
-                  <div className="dash-panel-head"><h2>Peso ao Longo do Tempo</h2></div>
-                  <div className="dash-panel-body">
-                    {seedWeightLog.map((w) => (
-                      <div className="schedule-item" key={w.id}>
-                        <span className="schedule-dot" />
-                        <div className="schedule-body"><p className="tabular">{w.kg}kg</p><span>{w.date}</span></div>
+                <div className="settings-section-head"><h2>Medidas</h2><p>Peso, medidas corporais, fotos de transformação e histórico completo.</p></div>
+
+                <div className="dash-row" style={{ marginBottom: 20 }}>
+                  <div className="dash-panel" style={{ padding: 20 }}>
+                    <div className="settings-section-head" style={{ marginBottom: 12 }}><h2 style={{ fontSize: 14 }}>Galeria de Transformação</h2></div>
+                    <div className="form-grid" style={{ marginBottom: 12 }}>
+                      {(["front", "side", "back"] as const).map((field) => (
+                        <label className="media-drop" key={field} style={{ textAlign: "center", fontSize: 11.5 }}>
+                          {galleryPhotos[field] ? "✓ " : ""}{field === "front" ? "Foto Frente" : field === "side" ? "Foto Lado" : "Foto Costas"}
+                          <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => onPhotoUpload(field, e.target.files?.[0] || null)} />
+                        </label>
+                      ))}
+                    </div>
+                    {(galleryPhotos.front || galleryPhotos.side || galleryPhotos.back) && (
+                      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                        {galleryPhotos.front && <img src={galleryPhotos.front} alt="frente" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }} />}
+                        {galleryPhotos.side && <img src={galleryPhotos.side} alt="lado" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }} />}
+                        {galleryPhotos.back && <img src={galleryPhotos.back} alt="costas" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }} />}
+                      </div>
+                    )}
+                    <button className="btn btn-primary btn-sm" style={{ marginBottom: 18 }} disabled={!galleryPhotos.front && !galleryPhotos.side && !galleryPhotos.back} onClick={saveGalleryEntry}>Guardar Entrada</button>
+
+                    {gallery.length === 0 && <p style={{ fontSize: 12, color: "var(--text-faint)" }}>Ainda sem fotos de transformação.</p>}
+                    {gallery.map((g) => (
+                      <div key={g.id} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, paddingBottom: 10, borderBottom: "1px solid var(--line)" }}>
+                        {g.front && <img src={g.front} alt="frente" style={{ width: 46, height: 46, objectFit: "cover", borderRadius: 8 }} />}
+                        {g.side && <img src={g.side} alt="lado" style={{ width: 46, height: 46, objectFit: "cover", borderRadius: 8 }} />}
+                        {g.back && <img src={g.back} alt="costas" style={{ width: 46, height: 46, objectFit: "cover", borderRadius: 8 }} />}
+                        <div style={{ flex: 1, fontSize: 11.5, color: "var(--text-faint)" }}>{new Date(g.date).toLocaleDateString("pt-PT")}{g.weightKg ? ` · ${g.weightKg}kg` : ""}</div>
+                        <button className="icon-action" title="Remover" onClick={() => removeGalleryEntry(g.id)}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
                       </div>
                     ))}
                   </div>
+
+                  <div className="dash-panel" style={{ padding: 20 }}>
+                    <div className="settings-section-head" style={{ marginBottom: 12 }}><h2 style={{ fontSize: 14 }}>Peso ao Longo do Tempo</h2></div>
+                    <div className="chart-bars" style={{ marginBottom: 4 }}>
+                      {weights.slice(0, 8).reverse().map((w) => (
+                        <div key={w.id} className="chart-bar" style={{ height: `${Math.max((w.kg / Math.max(...weights.map((x) => x.kg), 1)) * 100, 8)}%` }} />
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                      <input className="field-input" type="number" placeholder="Novo peso (kg)" value={newWeight} onChange={(e) => setNewWeight(e.target.value)} />
+                      <button className="btn btn-primary btn-sm" onClick={addWeight} disabled={!newWeight}>Adicionar</button>
+                    </div>
+                    {weights.map((w) => (
+                      <div className="schedule-item" key={w.id}>
+                        <span className="schedule-dot" />
+                        <div className="schedule-body"><p className="tabular">{w.kg}kg</p><span>{new Date(w.date).toLocaleDateString("pt-PT")}</span></div>
+                        <button className="icon-action" title="Remover" onClick={() => removeWeight(w.id)} style={{ marginLeft: "auto" }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="dash-panel" style={{ padding: 20 }}>
+                  <div className="settings-section-head" style={{ marginBottom: 12 }}><h2 style={{ fontSize: 14 }}>{editingMeasurement ? "Editar Medição" : "Adicionar Medição Corporal"}</h2></div>
+                  <div className="form-grid" style={{ marginBottom: 14 }}>
+                    <label className="field"><span className="field-label">Peito (cm)</span><input className="field-input" type="number" value={measForm.chest} onChange={(e) => setMeasForm((f) => ({ ...f, chest: e.target.value }))} /></label>
+                    <label className="field"><span className="field-label">Cintura (cm)</span><input className="field-input" type="number" value={measForm.waist} onChange={(e) => setMeasForm((f) => ({ ...f, waist: e.target.value }))} /></label>
+                    <label className="field"><span className="field-label">Braço (cm)</span><input className="field-input" type="number" value={measForm.arm} onChange={(e) => setMeasForm((f) => ({ ...f, arm: e.target.value }))} /></label>
+                    <label className="field"><span className="field-label">Perna (cm)</span><input className="field-input" type="number" value={measForm.leg} onChange={(e) => setMeasForm((f) => ({ ...f, leg: e.target.value }))} /></label>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
+                    <button className="btn btn-primary btn-sm" onClick={addOrSaveMeasurement}>{editingMeasurement ? "Guardar Edição" : "Adicionar Medição"}</button>
+                    {editingMeasurement && <button className="btn btn-ghost btn-sm" onClick={() => { setEditingMeasurement(null); setMeasForm({ chest: "", waist: "", arm: "", leg: "" }); }}>Cancelar</button>}
+                  </div>
+                  {measurements.map((m) => (
+                    <div className="tx-row" key={m.id}>
+                      <div className="tx-info">
+                        <div className="tx-label">{new Date(m.date).toLocaleDateString("pt-PT")}</div>
+                        <div className="tx-sub">Peito {m.chest}cm · Cintura {m.waist}cm · Braço {m.arm}cm · Perna {m.leg}cm</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button className="btn btn-ghost btn-sm" onClick={() => startEditMeasurement(m)}>Editar</button>
+                        <button className="icon-action" title="Remover" onClick={() => removeMeasurement(m.id)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </>
             )}
@@ -267,6 +525,14 @@ export default function AthleteSettingsPage() {
             {section === "notificacoes" && (
               <div className="dash-panel" style={{ padding: 22 }}>
                 <div className="settings-section-head"><h2>Notificações</h2><p>Escolhe o que recebes e por onde.</p></div>
+                <div className="notif-row" style={{ borderBottom: "2px solid var(--line-strong)" }}>
+                  <div className="notif-row-label" style={{ color: "var(--text-faint)", fontSize: 11 }}>CATEGORIA</div>
+                  <div className="notif-channels" style={{ fontSize: 10.5, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase" }}>
+                    <span style={{ width: 38, textAlign: "center" }}>Push</span>
+                    <span style={{ width: 38, textAlign: "center" }}>Email</span>
+                    <span style={{ width: 38, textAlign: "center" }}>Na App</span>
+                  </div>
+                </div>
                 {(Object.keys(notif) as NotifCategory[]).map((cat) => (
                   <div className="notif-row" key={cat}>
                     <div>
@@ -375,20 +641,30 @@ export default function AthleteSettingsPage() {
                   <div className="finance-total-value tabular">{totalMonthly.toLocaleString("pt-PT")} Kz</div>
                 </div>
 
-                <div className="section-head"><h2>Subscrições</h2></div>
+                <div className="section-head"><h2>Subscrições</h2><span>diretas na FitPro e via profissionais</span></div>
                 <div className="dash-panel" style={{ marginBottom: 24 }}>
                   <div className="dash-panel-body">
                     {subs.map((s) => (
-                      <div className="schedule-item" key={s.id}>
-                        <span className="schedule-dot" style={{ background: s.status === "active" ? "var(--good)" : "var(--text-faint)" }} />
-                        <div className="schedule-body">
-                          <p>{s.name}</p>
-                          <span>{s.type} · {s.price} / {s.cycle} · Próximo pagamento: {s.nextPayment}</span>
+                      <div key={s.id}>
+                        <div className="schedule-item">
+                          <span className="schedule-dot" style={{ background: s.status === "active" ? "var(--good)" : "var(--text-faint)" }} />
+                          <div className="schedule-body">
+                            <p>{s.name}</p>
+                            <span>{s.type} · {s.price} / {s.cycle} · Próximo pagamento: {s.nextPayment}</span>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
+                            <button className="btn btn-ghost btn-sm" onClick={() => setSubDetails(subDetails === s.id ? null : s.id)}>{subDetails === s.id ? "Ocultar" : "Ver Detalhes"}</button>
+                            {s.status === "active" ? (
+                              <button className="btn btn-ghost btn-sm" onClick={() => setSubs(cancelSubscription(s.id))}>Cancelar</button>
+                            ) : (
+                              <span className="badge-status concluída">Cancelada</span>
+                            )}
+                          </div>
                         </div>
-                        {s.status === "active" ? (
-                          <button className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }} onClick={() => setSubs(cancelSubscription(s.id))}>Cancelar</button>
-                        ) : (
-                          <span className="badge-status concluída" style={{ marginLeft: "auto" }}>Cancelada</span>
+                        {subDetails === s.id && (
+                          <div style={{ padding: "0 20px 16px 44px", fontSize: 12, color: "var(--text-dim)" }}>
+                            Fornecedor: {s.name} · Tipo: {s.type} · Ciclo de faturação: {s.cycle} · Estado: {s.status === "active" ? "Ativa" : "Cancelada"}
+                          </div>
                         )}
                       </div>
                     ))}
@@ -403,7 +679,7 @@ export default function AthleteSettingsPage() {
                       <span>{inv.service}</span>
                       <span className="tabular">{inv.amount}</span>
                       <span className={`stock ${inv.status === "Pago" ? "in" : "low"}`}>{inv.status}</span>
-                      <button className="btn btn-ghost btn-sm">Descarregar PDF</button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => downloadInvoicePdf(inv)}>Descarregar PDF</button>
                     </div>
                   ))}
                 </div>
@@ -430,10 +706,10 @@ export default function AthleteSettingsPage() {
                 </div>
 
                 <div className="section-head"><h2>Métodos de Pagamento</h2></div>
-                <div className="dash-panel" style={{ padding: "6px 20px" }}>
+                <div className="dash-panel" style={{ padding: "6px 20px 20px" }}>
                   {cards.map((c) => (
                     <div className="notif-row" key={c.id}>
-                      <div className="notif-row-label">💳 {c.brand} •••• {c.last4} {c.default && <span className="badge on" style={{ marginLeft: 6 }}>Padrão</span>}</div>
+                      <div className="notif-row-label">💳 {c.brand} •••• {c.last4} · válido até {c.expiry} {c.default && <span className="badge on" style={{ marginLeft: 6 }}>Padrão</span>}</div>
                       <div style={{ display: "flex", gap: 8 }}>
                         {!c.default && <button className="btn btn-ghost btn-sm" onClick={() => setCards(setDefaultCard(c.id))}>Tornar padrão</button>}
                         <button className="icon-action" title="Remover" onClick={() => setCards(removeCard(c.id))}>
@@ -442,7 +718,35 @@ export default function AthleteSettingsPage() {
                       </div>
                     </div>
                   ))}
-                  <button className="btn btn-ghost btn-sm" style={{ marginTop: 12 }} onClick={() => setCards(addCard("Mastercard", String(1000 + Math.floor(Math.random() * 9000))))}>+ Adicionar Cartão</button>
+
+                  {showAddCard ? (
+                    <div style={{ marginTop: 14, padding: 14, background: "var(--surface-2)", borderRadius: "var(--radius-md)" }}>
+                      <div className="form-grid" style={{ marginBottom: 10 }}>
+                        <label className="field">
+                          <span className="field-label">Tipo de cartão</span>
+                          <select className="field-input" value={cardForm.brand} onChange={(e) => setCardForm((f) => ({ ...f, brand: e.target.value }))}>
+                            <option>Visa</option><option>Mastercard</option><option>American Express</option>
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span className="field-label">Últimos 4 dígitos</span>
+                          <input className="field-input" maxLength={4} value={cardForm.last4} onChange={(e) => setCardForm((f) => ({ ...f, last4: e.target.value.replace(/\D/g, "") }))} placeholder="4242" />
+                        </label>
+                        <label className="field">
+                          <span className="field-label">Validade (MM/AA)</span>
+                          <input className="field-input" value={cardForm.expiry} onChange={(e) => setCardForm((f) => ({ ...f, expiry: e.target.value }))} placeholder="09/28" />
+                        </label>
+                      </div>
+                      {cardError && <p style={{ fontSize: 12, color: "var(--bad)", marginBottom: 10 }}>{cardError}</p>}
+                      <p style={{ fontSize: 11, color: "var(--text-faint)", marginBottom: 10 }}>Por segurança, nunca guardamos o número completo do cartão.</p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button className="btn btn-primary btn-sm" onClick={submitCard}>Guardar Cartão</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => { setShowAddCard(false); setCardError(""); }}>Cancelar</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button className="btn btn-ghost btn-sm" style={{ marginTop: 12 }} onClick={() => setShowAddCard(true)}>+ Adicionar Cartão</button>
+                  )}
                 </div>
               </>
             )}
@@ -450,10 +754,22 @@ export default function AthleteSettingsPage() {
             {section === "dados" && (
               <div className="dash-panel" style={{ padding: 22 }}>
                 <div className="settings-section-head"><h2>Dados & Exportação</h2><p>Descarrega os teus dados a qualquer momento.</p></div>
-                <div className="rich-actions" style={{ margin: 0, flexWrap: "wrap" }}>
-                  <button className="btn btn-ghost">📄 Exportar Dados Pessoais (PDF)</button>
-                  <button className="btn btn-ghost">📊 Descarregar Histórico Fitness (CSV)</button>
-                  <button className="btn btn-ghost">🧾 Descarregar Faturas (PDF)</button>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 420 }}>
+                  {([
+                    { key: "profile-pdf", label: "📄 Exportar Dados Pessoais (PDF)", action: exportProfilePdf },
+                    { key: "fitness-csv", label: "📊 Descarregar Histórico Fitness (CSV)", action: exportFitnessCsv },
+                    { key: "invoices-pdf", label: "🧾 Descarregar Faturas (PDF)", action: exportInvoicesPdf },
+                  ] as const).map((item) => {
+                    const status = exportStatus[item.key] || "idle";
+                    return (
+                      <div key={item.key} className="notif-row">
+                        <span className="notif-row-label">{item.label}</span>
+                        <button className="btn btn-ghost btn-sm" disabled={status === "preparing"} onClick={item.action}>
+                          {status === "preparing" ? "A preparar…" : status === "ready" ? "✓ Pronto — descarregado" : "Descarregar"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -13,22 +13,49 @@ function write<T>(key: string, value: T) {
 }
 
 // ---------- Personal info ----------
-export type PersonalInfo = { age: number; gender: string; heightCm: number; phone: string; address: string };
+export type PersonalInfo = {
+  age: number; gender: string; heightCm: number; phone: string; address: string;
+  whatsappCountryCode: string; whatsappNumber: string; whatsappVisible: boolean; birthDate: string;
+};
 const PERSONAL_KEY = "fitpro_settings_personal";
-export const defaultPersonalInfo: PersonalInfo = { age: 27, gender: "Prefiro não dizer", heightCm: 178, phone: "+244 923 000 000", address: "Viana, Luanda" };
+export const defaultPersonalInfo: PersonalInfo = {
+  age: 27, gender: "Prefiro não dizer", heightCm: 178, phone: "+244 923 000 000", address: "Viana, Luanda",
+  whatsappCountryCode: "+244", whatsappNumber: "923000000", whatsappVisible: true, birthDate: "1999-03-14",
+};
 export function getPersonalInfo(): PersonalInfo {
-  return read(PERSONAL_KEY, defaultPersonalInfo);
+  const v = read(PERSONAL_KEY, defaultPersonalInfo);
+  return { ...defaultPersonalInfo, ...v };
 }
 export function savePersonalInfo(v: PersonalInfo) {
   write(PERSONAL_KEY, v);
 }
+export function isValidWhatsapp(number: string) {
+  return /^\d{7,12}$/.test(number.replace(/\s/g, ""));
+}
 
 // ---------- Fitness config ----------
-export type FitnessConfig = { goal: string; level: string; frequency: number; trainingType: string };
+export type FitnessConfig = {
+  goals: string[];
+  level: string;
+  frequency: number;
+  preferredDays: string[];
+  trainingTypes: string[];
+};
 const FITNESS_KEY = "fitpro_settings_fitness";
-export const defaultFitnessConfig: FitnessConfig = { goal: "Ganhar massa", level: "Intermédio", frequency: 5, trainingType: "Força" };
+export const goalOptionsMulti = ["Ganhar massa muscular", "Perder gordura", "Aumentar força", "Melhorar resistência", "Performance", "Manutenção", "Reabilitação", "Saúde geral"];
+export const levelOptionsExt = ["Iniciante", "Intermédio", "Avançado", "Profissional"];
+export const trainingTypeOptions = ["Força", "Hipertrofia", "Cardio", "HIIT", "Funcional", "CrossFit", "Mobilidade", "Corrida", "Powerlifting", "Bodybuilding"];
+export const weekDayOptions = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+export const defaultFitnessConfig: FitnessConfig = {
+  goals: ["Ganhar massa muscular", "Aumentar força"],
+  level: "Intermédio",
+  frequency: 5,
+  preferredDays: ["Segunda", "Quarta", "Sexta"],
+  trainingTypes: ["Força", "Hipertrofia"],
+};
 export function getFitnessConfig(): FitnessConfig {
-  return read(FITNESS_KEY, defaultFitnessConfig);
+  const v = read(FITNESS_KEY, defaultFitnessConfig);
+  return { ...defaultFitnessConfig, ...v };
 }
 export function saveFitnessConfig(v: FitnessConfig) {
   write(FITNESS_KEY, v);
@@ -169,14 +196,14 @@ export const monthlySpending = [
   { month: "Mai", kz: 17400 }, { month: "Jun", kz: 18000 }, { month: "Jul", kz: 19700 },
 ];
 
-export type PaymentMethod = { id: string; brand: string; last4: string; default: boolean };
+export type PaymentMethod = { id: string; brand: string; last4: string; expiry: string; default: boolean };
 const CARDS_KEY = "fitpro_settings_cards";
-export const defaultCards: PaymentMethod[] = [{ id: "card1", brand: "Visa", last4: "4242", default: true }];
+export const defaultCards: PaymentMethod[] = [{ id: "card1", brand: "Visa", last4: "4242", expiry: "09/28", default: true }];
 export function getCards(): PaymentMethod[] {
   return read(CARDS_KEY, defaultCards);
 }
-export function addCard(brand: string, last4: string) {
-  const next = [...getCards(), { id: Math.random().toString(36).slice(2), brand, last4, default: false }];
+export function addCard(brand: string, last4: string, expiry: string) {
+  const next = [...getCards(), { id: Math.random().toString(36).slice(2), brand, last4, expiry, default: getCards().length === 0 }];
   write(CARDS_KEY, next);
   return next;
 }

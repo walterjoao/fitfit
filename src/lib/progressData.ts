@@ -53,6 +53,9 @@ export const athleteLevel = { level: 6, label: "Atleta Dedicado", progress: 64 }
 export type TransformationPhoto = { id: string; date: string; url: string; label: "before" | "after" };
 export const seedPhotos: TransformationPhoto[] = [];
 
+export type BodyGalleryEntry = { id: string; date: string; front?: string; side?: string; back?: string; weightKg?: number; notes?: string };
+export const seedBodyGallery: BodyGalleryEntry[] = [];
+
 export type HistoryEvent = { id: string; date: string; text: string; type: "peso" | "treino" | "nutrição" | "corpo" };
 export const historyEvents: HistoryEvent[] = [
   { id: "h1", date: "10 Jul", text: "Treino completo: Muscle Growth Program", type: "treino" },
