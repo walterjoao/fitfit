@@ -23,6 +23,46 @@ export type DirProfile = {
 };
 
 export const directory: Record<string, DirProfile> = {
+  "rui-ferreira": {
+    id: "rui-ferreira", name: "Rui Ferreira", role: "trainer", location: "Talatona, Luanda",
+    bio: "Personal Trainer especializado em hipertrofia e planos de progressão individual.",
+    cover: bgImage(portraitImages.trainer[1]), followers: 640, following: 40, rating: 4.7, reviews: 52,
+    specialties: ["Hipertrofia", "Treino individual"],
+    reviewsList: [],
+  },
+  "nelson-sami": {
+    id: "nelson-sami", name: "Nelson Sami", role: "trainer", location: "Talatona, Luanda",
+    bio: "Personal Trainer focado em performance e CrossFit para atletas exigentes.",
+    cover: bgImage(portraitImages.trainer[2]), followers: 480, following: 30, rating: 4.8, reviews: 41,
+    specialties: ["Performance", "CrossFit"],
+    reviewsList: [],
+  },
+  "diana-sacramento": {
+    id: "diana-sacramento", name: "Diana Sacramento", role: "nutritionist", location: "Talatona, Luanda",
+    bio: "Nutricionista especializada em perda de peso sustentável.",
+    cover: bgImage(portraitImages.nutritionist[1]), followers: 320, following: 20, rating: 4.6, reviews: 30,
+    specialties: ["Perda de peso"],
+    reviewsList: [],
+  },
+  "corpo-ativo-fitness-club": {
+    id: "corpo-ativo-fitness-club", name: "Corpo Ativo Fitness Club", role: "gym", location: "Viana, Luanda",
+    bio: "Ginásio completo com aulas de grupo, musculação e boxe.",
+    cover: bgImage(unsplashImages.gym[1]), followers: 1900, following: 8, rating: 4.5, reviews: 128,
+    facilities: ["Musculação", "Boxe", "Funcional"],
+    reviewsList: [],
+  },
+  "supleforte": {
+    id: "supleforte", name: "SupleForte", role: "shop", location: "Luanda",
+    bio: "Loja parceira FitPro com os melhores suplementos importados.",
+    cover: bgImage(unsplashImages.nutrition[1]), followers: 540, following: 4, rating: 4.5, reviews: 64,
+    reviewsList: [],
+  },
+  "corpo-ativo-shop": {
+    id: "corpo-ativo-shop", name: "Corpo Ativo Shop", role: "shop", location: "Viana, Luanda",
+    bio: "Equipamento e vestuário desportivo ao melhor preço.",
+    cover: bgImage(unsplashImages.nutrition[2]), followers: 410, following: 3, rating: 4.4, reviews: 38,
+    reviewsList: [],
+  },
   "ana-ferreira": {
     id: "ana-ferreira", name: "Ana Ferreira", role: "trainer", location: "Talatona, Luanda",
     bio: "Personal Trainer certificada especializada em força e hipertrofia. 8 anos de experiência a ajudar atletas a atingir o seu potencial máximo.",

@@ -62,10 +62,8 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "nutrition", label: "A Minha Nutrição", href: "/dashboard/athlete/nutrition", icon: icons.nutrition },
     { key: "progress", label: "Progresso", href: "/dashboard/athlete/progress", icon: icons.progress },
     { key: "goals", label: "Objetivos", href: "/dashboard/athlete/goals", icon: icons.goals },
-    { key: "achievements", label: "Conquistas", href: "/dashboard/athlete/achievements", icon: icons.achievements },
     { key: "nearby", label: "Perto de Ti", href: "/dashboard/athlete/nearby", icon: icons.nearby },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
-    { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/dashboard/athlete/settings", icon: icons.settings },
   ],
   trainer: [
@@ -75,7 +73,6 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "calendar", label: "Calendário", href: "/calendar", icon: icons.calendar },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
     { key: "analytics", label: "Analítica", href: "/analytics", icon: icons.analytics },
-    { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/dashboard/settings", icon: icons.settings },
   ],
   nutritionist: [
@@ -86,7 +83,6 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "appointments", label: "Consultas", href: "/dashboard/nutritionist/appointments", icon: icons.appointments },
     { key: "reports", label: "Relatórios", href: "/dashboard/nutritionist/reports", icon: icons.reports },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
-    { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/dashboard/nutritionist/settings", icon: icons.settings },
   ],
   gym: [
@@ -98,7 +94,6 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "payments", label: "Pagamentos", href: "/dashboard/gym/payments", icon: icons.payments },
     { key: "analytics", label: "Analítica", href: "/dashboard/gym/analytics", icon: icons.analytics },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
-    { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/dashboard/gym/settings", icon: icons.settings },
   ],
   shop: [
@@ -107,7 +102,6 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "orders", label: "Encomendas", href: "/dashboard/shop/orders", icon: icons.orders },
     { key: "payments", label: "Pagamentos", href: "/dashboard/shop/payments", icon: icons.payments },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
-    { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/dashboard/shop/settings", icon: icons.settings },
   ],
   admin: [
@@ -124,7 +118,6 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "shop_applications", label: "Candidaturas de Loja", href: "/dashboard/admin/shop-applications", icon: icons.apply },
     { key: "analytics", label: "Analítica", href: "/analytics", icon: icons.analytics },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
-    { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/dashboard/admin/settings", icon: icons.settings },
   ],
 };
