@@ -69,17 +69,21 @@ function Field({
   type = "text",
   placeholder,
   select,
+  value,
+  onChange,
 }: {
   label: string;
   type?: string;
   placeholder?: string;
   select?: { value: string; label: string }[];
+  value?: string;
+  onChange?: (v: string) => void;
 }) {
   return (
     <label className="field">
       <span className="field-label">{label}</span>
       {select ? (
-        <select className="field-input">
+        <select className="field-input" value={value} onChange={(e) => onChange?.(e.target.value)}>
           {select.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -87,7 +91,13 @@ function Field({
           ))}
         </select>
       ) : (
-        <input className="field-input" type={type} placeholder={placeholder} />
+        <input
+          className="field-input"
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+        />
       )}
     </label>
   );
@@ -100,15 +110,47 @@ const roleDashboard: Record<Role, string> = {
   gym: "/dashboard/gym",
 };
 
+const roleDashboardAny: Record<string, string> = {
+  admin: "/dashboard/admin",
+  ...roleDashboard,
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("login");
   const [step, setStep] = useState<Step>("role");
   const [role, setRole] = useState<Role | null>(null);
 
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
+
   function selectTab(t: Tab) {
     setTab(t);
     if (t === "signup") setStep(role ? "form" : "role");
+  }
+
+  async function handleLogin() {
+    setLoginError(null);
+    setLoginLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLoginError(data.error || "Não foi possível iniciar sessão.");
+        return;
+      }
+      router.push(roleDashboardAny[data.role] || "/dashboard");
+    } catch {
+      setLoginError("Erro de ligação. Tenta novamente.");
+    } finally {
+      setLoginLoading(false);
+    }
   }
 
   return (
@@ -159,8 +201,9 @@ export default function LoginPage() {
 
             {tab === "login" && (
               <div className="auth-body">
-                <Field label="Email" type="email" placeholder="tu@email.com" />
-                <Field label="Palavra-passe" type="password" placeholder="••••••••" />
+                <Field label="Email" type="email" placeholder="tu@email.com" value={loginEmail} onChange={setLoginEmail} />
+                <Field label="Palavra-passe" type="password" placeholder="••••••••" value={loginPassword} onChange={setLoginPassword} />
+                {loginError && <p style={{ color: "var(--bad)", fontSize: 12.5, margin: 0 }}>{loginError}</p>}
                 <div className="auth-row">
                   <label className="auth-check">
                     <input type="checkbox" />
@@ -170,7 +213,9 @@ export default function LoginPage() {
                     Esqueceste-te da palavra-passe?
                   </Link>
                 </div>
-                <button className="auth-submit" onClick={() => router.push("/dashboard")}>Login</button>
+                <button className="auth-submit" onClick={handleLogin} disabled={loginLoading}>
+                  {loginLoading ? "A entrar…" : "Login"}
+                </button>
                 <div className="auth-divider"><span>ou</span></div>
                 <button className="auth-google">
                   <svg width="18" height="18" viewBox="0 0 24 24">
