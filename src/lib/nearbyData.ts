@@ -54,3 +54,25 @@ export function pinPosition(seed: string) {
   const y = 15 + ((h * 7) % 70);
   return { x, y };
 }
+
+// Luanda, Angola — used as the default map center when geolocation isn't available.
+export const defaultCenter = { lat: -8.8368, lng: 13.2343 };
+
+// Deterministic lat/lng for each entry, placed at its stated distance from `center`
+// on a hash-derived bearing (no real geodata backend exists, so this keeps the map
+// visually consistent with the distanceKm shown on each card).
+export function entryLatLng(entry: { id: string; distanceKm: number }, center: { lat: number; lng: number }) {
+  let h = 0;
+  for (let i = 0; i < entry.id.length; i++) h = (h * 31 + entry.id.charCodeAt(i)) % 36000;
+  const bearingRad = (h / 100) * (Math.PI / 180);
+  const R = 6371;
+  const d = entry.distanceKm;
+  const lat1 = (center.lat * Math.PI) / 180;
+  const lng1 = (center.lng * Math.PI) / 180;
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(bearingRad));
+  const lng2 = lng1 + Math.atan2(
+    Math.sin(bearingRad) * Math.sin(d / R) * Math.cos(lat1),
+    Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2)
+  );
+  return { lat: (lat2 * 180) / Math.PI, lng: (lng2 * 180) / Math.PI };
+}

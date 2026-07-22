@@ -7,7 +7,8 @@ import Sidebar from "@/components/Sidebar";
 import { useRoleGuard } from "@/lib/session";
 import { notifyAndEmail } from "@/lib/notifications";
 import { toggleFollow, isFollowing } from "@/lib/directory";
-import { nearbyEntries, nearbyTypeLabel, nearbyTypeColor, pinPosition, type NearbyType } from "@/lib/nearbyData";
+import { nearbyEntries, nearbyTypeLabel, type NearbyType } from "@/lib/nearbyData";
+import NearbyMap from "@/components/nearby/NearbyMap";
 
 function initials(n: string) {
   return n.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
@@ -179,26 +180,13 @@ export default function NearbyPage() {
               </div>
 
               <div className="nearby-map">
-                <div className="map-pin-you" style={{ left: "50%", top: "50%" }} title="A tua localização" />
-                {filtered.map((e) => {
-                  const pos = pinPosition(e.id);
-                  return (
-                    <div
-                      key={e.id}
-                      className="map-pin"
-                      style={{ left: `${pos.x}%`, top: `${pos.y}%`, background: nearbyTypeColor[e.type] }}
-                      title={`${e.name} · ${e.distanceKm.toFixed(1)}km`}
-                    >
-                      <span>{e.type === "athlete" ? "👤" : e.type === "trainer" ? "🧑‍🏫" : e.type === "gym" ? "🏋️" : "🥗"}</span>
-                    </div>
-                  );
-                })}
+                <NearbyMap entries={filtered} center={coords} />
               </div>
             </div>
 
             {coords && (
               <p style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 16 }} className="tabular">
-                Localização detetada: {coords.lat.toFixed(3)}, {coords.lng.toFixed(3)} · mapa ilustrativo
+                Localização detetada: {coords.lat.toFixed(3)}, {coords.lng.toFixed(3)}
               </p>
             )}
           </>
