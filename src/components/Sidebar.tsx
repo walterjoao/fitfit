@@ -31,7 +31,7 @@ const items: { key: SidebarItem; label: string; href: string; icon: ReactElement
   {
     key: "leaderboard",
     label: "Leaderboard",
-    href: "/",
+    href: "/leaderboard",
     icon: (
       <>
         <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z" />
@@ -118,7 +118,7 @@ export default function Sidebar({ active }: { active: SidebarItem }) {
   return (
     <nav className="app-sidebar" aria-label="Navegação principal">
       <div className="app-sidebar-top">
-        <Link href="/" className="sidebar-brand" aria-label="FitPro">
+        <Link href="/dashboard" className="sidebar-brand" aria-label="FitPro">
           <span className="sidebar-brand-mark" />
           <span className="sidebar-brand-word">
             Fit<b>Pro</b>

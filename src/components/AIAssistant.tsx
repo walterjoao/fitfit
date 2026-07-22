@@ -28,7 +28,7 @@ export default function AIAssistant() {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
   }, [messages, open]);
 
-  if (pathname === "/login") return null;
+  if (pathname === "/" || pathname === "/login") return null;
 
   async function send() {
     const text = input.trim();
