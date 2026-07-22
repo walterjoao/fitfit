@@ -207,22 +207,35 @@ export default function ProfilePage() {
                 </button>
               )}
               {(isTrainerViewer || isNutritionistViewer) && (
-                <div style={{ position: "relative" }}>
-                  <button className="btn btn-primary" onClick={() => setShowAssignMenu((v) => !v)}>Atribuir ▾</button>
+                <>
+                  <button className="btn btn-primary" onClick={() => setShowAssignMenu(true)}>Atribuir ▾</button>
                   {showAssignMenu && (
-                    <div className="dash-panel" style={{ position: "absolute", top: "110%", left: 0, zIndex: 10, padding: 8, minWidth: 200 }}>
-                      {isTrainerViewer && (
-                        <>
-                          <Link href={`/programs?athlete=${trainees.find((t) => t.profileId === profile.id)?.id || ""}`} className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>🏋️ Atribuir Treino</Link>
-                          <button className="settings-nav-item" onClick={() => { setTab("Notas (PT)"); setShowAssignMenu(false); }}>📝 Adicionar Nota</button>
-                        </>
-                      )}
-                      {isNutritionistViewer && (
-                        <Link href="/dashboard/nutritionist/meal-plans" className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>🥗 Atribuir Plano Alimentar</Link>
-                      )}
+                    <div
+                      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}
+                      onClick={() => setShowAssignMenu(false)}
+                    >
+                      <div className="dash-panel" style={{ padding: 10, minWidth: 260 }} onClick={(e) => e.stopPropagation()}>
+                        <div className="settings-section-head" style={{ padding: "6px 10px" }}><h2 style={{ fontSize: 13 }}>Atribuir a {profile.name}</h2></div>
+                        {isTrainerViewer && (
+                          <>
+                            <Link href={`/programs?athlete=${trainees.find((t) => t.profileId === profile.id)?.id || ""}`} className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>🏋️ Atribuir Treino</Link>
+                            <button className="settings-nav-item" onClick={() => { setTab("Recordes"); setShowAssignMenu(false); }}>💪 Ver/Adicionar Exercício</button>
+                            <Link href={`/programs?athlete=${trainees.find((t) => t.profileId === profile.id)?.id || ""}`} className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>📋 Programa de Treino</Link>
+                            <button className="settings-nav-item" onClick={() => { setTab("Notas (PT)"); setShowAssignMenu(false); }}>🎯 Definir Objetivo</button>
+                            <button className="settings-nav-item" onClick={() => { setTab("Notas (PT)"); setShowAssignMenu(false); }}>📝 Adicionar Nota</button>
+                          </>
+                        )}
+                        {isNutritionistViewer && (
+                          <>
+                            <Link href="/dashboard/nutritionist/meal-plans" className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>🥗 Atribuir Plano Alimentar</Link>
+                            <Link href="/dashboard/nutritionist/meal-plans" className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>🍎 Pedido Nutricional</Link>
+                          </>
+                        )}
+                        <button className="settings-nav-item" onClick={() => setShowAssignMenu(false)} style={{ color: "var(--text-faint)" }}>Cancelar</button>
+                      </div>
                     </div>
                   )}
-                </div>
+                </>
               )}
               <Link href={session ? messagesPath(session.role) : "/dashboard/athlete/messages"} className="btn btn-ghost">Mensagem</Link>
               {nutritionistInfo && (
