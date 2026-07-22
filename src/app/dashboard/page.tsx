@@ -2,6 +2,7 @@
 
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import { useRoleGuard } from "@/lib/session";
 
 const kpis = [
   {
@@ -98,6 +99,9 @@ function LineChart({ data }: { data: { m: string; v: number }[] }) {
 }
 
 export default function Dashboard() {
+  const { ready } = useRoleGuard("trainer");
+  if (!ready) return null;
+
   return (
     <>
       <Sidebar role="trainer" active="dashboard" />

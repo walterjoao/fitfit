@@ -3,6 +3,7 @@
 import { useState, type ReactElement } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { setSession } from "@/lib/session";
 
 type Tab = "login" | "signup";
 type Step = "role" | "form";
@@ -157,6 +158,7 @@ export default function LoginPage() {
         setLoginError(data.error || "Não foi possível iniciar sessão.");
         return;
       }
+      setSession({ name: data.name, email: data.email, role: data.role });
       router.push(roleDashboardAny[data.role] || "/dashboard");
     } catch {
       setLoginError("Erro de ligação. Tenta novamente.");
@@ -327,7 +329,16 @@ export default function LoginPage() {
                   </>
                 )}
 
-                <button className="auth-submit" onClick={() => router.push(roleDashboardAny[role])}>Criar conta</button>
+                <button
+                  className="auth-submit"
+                  onClick={() => {
+                    if (!role) return;
+                    setSession({ name: "Novo Utilizador", email: "", role });
+                    router.push(roleDashboardAny[role]);
+                  }}
+                >
+                  Criar conta
+                </button>
               </div>
             )}
           </div>

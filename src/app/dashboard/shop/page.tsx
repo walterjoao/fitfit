@@ -3,6 +3,7 @@
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { products, catIcon, catBg, stockLabel } from "@/lib/data";
+import { useRoleGuard } from "@/lib/session";
 
 const kpis = [
   { label: "Produtos ativos", value: String(products.length), delta: "+2 este mês", icon: <><path d="M3 9 12 4l9 5-9 5-9-5Z" /><path d="M3 9v6l9 5 9-5V9" /></> },
@@ -12,6 +13,9 @@ const kpis = [
 ];
 
 export default function ShopDashboard() {
+  const { ready } = useRoleGuard("shop");
+  if (!ready) return null;
+
   return (
     <>
       <Sidebar role="shop" active="dashboard" />

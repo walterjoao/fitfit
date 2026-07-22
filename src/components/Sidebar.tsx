@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ReactElement } from "react";
+import { clearSession } from "@/lib/session";
 
 export type Role = "athlete" | "trainer" | "nutritionist" | "gym" | "shop" | "admin";
 
@@ -43,6 +44,7 @@ const icons = {
   products: <><path d="M3 9 12 4l9 5-9 5-9-5Z" /><path d="M3 9v6l9 5 9-5V9" /></>,
   orders: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M3 11h18M9 3v4M15 3v4" /></>,
   apply: <><circle cx="12" cy="12" r="9" /><path d="M12 8v4l3 3" /></>,
+  nearby: <><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" /></>,
   messages: <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />,
   ai: <><path d="M12 3v3M12 18v3M5 5l2 2M17 17l2 2M3 12h3M18 12h3M5 19l2-2M17 7l2-2" /><circle cx="12" cy="12" r="3.2" /></>,
   settings: (
@@ -61,6 +63,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "progress", label: "Progresso", href: "/dashboard/athlete/progress", icon: icons.progress },
     { key: "goals", label: "Objetivos", href: "/dashboard/athlete/goals", icon: icons.goals },
     { key: "achievements", label: "Conquistas", href: "/dashboard/athlete/achievements", icon: icons.achievements },
+    { key: "nearby", label: "Perto de Ti", href: "/dashboard/athlete/nearby", icon: icons.nearby },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
     { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/settings", icon: icons.settings },
@@ -191,14 +194,14 @@ export default function Sidebar({ role, active }: { role: Role; active: string }
           </svg>
           <span>Ajuda</span>
         </Link>
-        <Link href="/" className="sidebar-item" title="Sair" aria-label="Sair">
+        <button className="sidebar-item" title="Sair" aria-label="Sair" onClick={() => { clearSession(); window.location.href = "/"; }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <path d="M16 17l5-5-5-5" />
             <path d="M21 12H9" />
           </svg>
           <span>Sair</span>
-        </Link>
+        </button>
       </div>
     </nav>
   );

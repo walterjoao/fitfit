@@ -2,10 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useSession, roleDashboardPath } from "@/lib/session";
+
+const roleLabel: Record<string, string> = {
+  admin: "Admin",
+  trainer: "Personal Trainer",
+  nutritionist: "Nutricionista",
+  gym: "Ginásio",
+  athlete: "Atleta",
+  shop: "Lojista",
+};
+
+function initials(name: string) {
+  return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
+}
 
 export default function Header() {
   const [openMenu, setOpenMenu] = useState<"notif" | "create" | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const session = useSession();
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -39,7 +54,14 @@ export default function Header() {
         </div>
 
         <div className="header-actions">
-          <Link href="/" className="icon-btn" title="Leaderboard" aria-label="Leaderboard">
+          <Link href="/events" className="icon-btn" title="Eventos" aria-label="Eventos">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M3 10h18M8 3v4M16 3v4" />
+            </svg>
+          </Link>
+
+          <Link href="/leaderboard" className="icon-btn" title="Leaderboard" aria-label="Leaderboard">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z" />
               <path d="M7 6H4a1 1 0 0 0-1 1c0 2.5 1.8 4.5 4.2 4.9M17 6h3a1 1 0 0 1 1 1c0 2.5-1.8 4.5-4.2 4.9" />
@@ -127,8 +149,12 @@ export default function Header() {
             </div>
           </div>
 
-          <Link href="/dashboard" className="avatar" title="Ana Ferreira · Personal Trainer">
-            AF
+          <Link
+            href={session ? roleDashboardPath[session.role] || "/dashboard" : "/"}
+            className="avatar"
+            title={session ? `${session.name} · ${roleLabel[session.role] || session.role}` : "Iniciar sessão"}
+          >
+            {session ? initials(session.name) : "?"}
           </Link>
         </div>
       </div>

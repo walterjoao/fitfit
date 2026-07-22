@@ -2,6 +2,7 @@
 
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import { useRoleGuard } from "@/lib/session";
 
 const kpis = [
   { label: "Clientes ativos", value: "46", delta: "+3 este mês", icon: <><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 8h4M19 6v4" /></> },
@@ -31,6 +32,9 @@ function initials(n: string) {
 }
 
 export default function NutritionistDashboard() {
+  const { ready } = useRoleGuard("nutritionist");
+  if (!ready) return null;
+
   return (
     <>
       <Sidebar role="nutritionist" active="dashboard" />
