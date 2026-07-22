@@ -339,6 +339,7 @@ a{color:inherit;text-decoration:none;}
 .badge.on{background:var(--good-soft);color:var(--good);}
 .badge.risk{background:var(--bad-soft);color:var(--bad);}
 .badge.paused{background:var(--surface-2);color:var(--text-faint);}
+.badge.inactive{background:var(--surface-2);color:var(--text-faint);}
 
 .chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding:18px;}
 .chart-bar{flex:1;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg, var(--accent), var(--accent-strong));min-width:0;position:relative;}
