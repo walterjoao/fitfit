@@ -18,6 +18,7 @@ import {
   roleCatalog, getRoleActivations, requestRoleActivation, pauseRole, removeRole,
 } from "@/lib/athleteSettingsData";
 import { getProfileOverride, saveProfileOverride } from "@/lib/athleteProfileData";
+import { slugify } from "@/lib/directory";
 import { seedMeasurements, seedBodyGallery, type MeasurementEntry, type BodyGalleryEntry, type WeightEntry } from "@/lib/progressData";
 import { useLocalList } from "@/lib/progressStore";
 import { buildSimplePdf, downloadBlob, downloadCsv } from "@/lib/fileExport";
@@ -112,6 +113,17 @@ export default function AthleteSettingsPage() {
 
   function toggleMulti(list: string[], value: string) {
     return list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
+  }
+
+  function onProfilePhoto(field: "avatarUrl" | "coverUrl", file: File | null) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const patch = { [field]: reader.result as string };
+      setOverride((o) => ({ ...o, ...patch }));
+      saveProfileOverride(patch);
+    };
+    reader.readAsDataURL(file);
   }
 
   function onPhotoUpload(field: "front" | "side" | "back", file: File | null) {
@@ -239,7 +251,7 @@ export default function AthleteSettingsPage() {
             <h1>Definições da Conta</h1>
             <p>O teu centro de controlo — dados, preferências, privacidade, finanças e funções.</p>
           </div>
-          <Link href="/profile/tiago-kiala" className="btn btn-ghost btn-sm">Pré-visualizar Perfil Público</Link>
+          <Link href={`/profile/${slugify(session.name)}`} className="btn btn-ghost btn-sm">Pré-visualizar Perfil Público</Link>
         </div>
 
         <div className="settings-layout">
@@ -273,14 +285,20 @@ export default function AthleteSettingsPage() {
                     <input className="field-input" value={override.bio ?? ""} onChange={(e) => setOverride((o) => ({ ...o, bio: e.target.value }))} placeholder="Fala um pouco sobre ti…" />
                   </label>
                 </div>
+                {(override.avatarUrl || override.coverUrl) && (
+                  <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+                    {override.avatarUrl && <img src={override.avatarUrl} alt="Foto de perfil" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover" }} />}
+                    {override.coverUrl && <img src={override.coverUrl} alt="Capa" style={{ width: 100, height: 56, borderRadius: 8, objectFit: "cover" }} />}
+                  </div>
+                )}
                 <div className="rich-actions" style={{ margin: 0 }}>
                   <label className="media-drop" style={{ flex: 1, textAlign: "center" }}>
-                    Alterar foto de perfil
-                    <input type="file" accept="image/*" style={{ display: "none" }} />
+                    {override.avatarUrl ? "✓ Foto de perfil alterada" : "Alterar foto de perfil"}
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => onProfilePhoto("avatarUrl", e.target.files?.[0] || null)} />
                   </label>
                   <label className="media-drop" style={{ flex: 1, textAlign: "center" }}>
-                    Alterar capa
-                    <input type="file" accept="image/*" style={{ display: "none" }} />
+                    {override.coverUrl ? "✓ Capa alterada" : "Alterar capa"}
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => onProfilePhoto("coverUrl", e.target.files?.[0] || null)} />
                   </label>
                 </div>
                 <div style={{ marginTop: 16, display: "flex", alignItems: "center" }}>

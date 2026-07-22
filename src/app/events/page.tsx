@@ -4,9 +4,12 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import type { Role } from "@/components/Sidebar";
+import { useSession } from "@/lib/session";
 import { evtLabel, events } from "@/lib/data";
 
 export default function EventsPage() {
+  const session = useSession();
   const [evtType, setEvtType] = useState<"all" | "run" | "class" | "workshop" | "competition">("all");
   const [evtWhen, setEvtWhen] = useState<"all" | "week" | "month">("all");
   const featured = events.find((e) => e.id === "hyrox")!;
@@ -18,9 +21,15 @@ export default function EventsPage() {
     [evtType, evtWhen]
   );
 
+  if (session === undefined) return null;
+  if (!session) {
+    if (typeof window !== "undefined") window.location.href = "/";
+    return null;
+  }
+
   return (
     <>
-      <Sidebar role="trainer" active="" />
+      <Sidebar role={session.role as Role} active="" />
       <Header />
       <div className="shell">
         <section className="panel active">

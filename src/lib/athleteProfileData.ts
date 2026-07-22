@@ -27,6 +27,8 @@ export type ProfileOverride = {
   heightCm?: number;
   bodyFatPct?: number;
   trainingFreq?: number;
+  avatarUrl?: string;
+  coverUrl?: string;
 };
 
 const OVERRIDE_KEY = "fitpro_profile_override";

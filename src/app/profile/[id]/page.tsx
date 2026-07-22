@@ -111,12 +111,15 @@ export default function ProfilePage() {
       <Header />
       <div className="shell">
         <div className="featured" style={{ marginBottom: 24, gridTemplateColumns: "1fr" }}>
-          <div className="featured-art" style={{ background: profile.cover, minHeight: 160 }}>
+          <div className="featured-art" style={{ background: isOwner && override.coverUrl ? `url(${override.coverUrl}) center/cover no-repeat` : profile.cover, minHeight: 160 }}>
             <span className="featured-badge">{roleLabel[profile.role]}</span>
           </div>
           <div className="featured-body">
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              {nutritionistInfo ? (
+              {isOwner && override.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={override.avatarUrl} alt={profile.name} style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", marginTop: -48, border: "3px solid var(--surface)" }} />
+              ) : nutritionistInfo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={nutritionistInfo.photo} alt={profile.name} style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", marginTop: -48, border: "3px solid var(--surface)" }} />
               ) : (
