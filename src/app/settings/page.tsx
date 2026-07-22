@@ -1,15 +1,16 @@
 "use client";
 
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
-import ComingSoon from "@/components/ComingSoon";
+import { useSession } from "@/lib/session";
+import { settingsPath } from "@/lib/accountData";
 
-export default function SettingsPage() {
-  return (
-    <>
-      <Sidebar role="trainer" active="settings" />
-      <Header />
-      <ComingSoon title="Definições" description="Preferências da conta, notificações e faturação." />
-    </>
-  );
+export default function SettingsRedirect() {
+  const session = useSession();
+
+  if (session === undefined) return null;
+
+  if (typeof window !== "undefined") {
+    window.location.href = session ? settingsPath(session.role) : "/";
+  }
+
+  return null;
 }

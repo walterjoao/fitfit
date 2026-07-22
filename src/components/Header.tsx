@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useSession, roleDashboardPath } from "@/lib/session";
+import { useSession, clearSession } from "@/lib/session";
+import { settingsPath, billingPath, financePath } from "@/lib/accountData";
 
 const roleLabel: Record<string, string> = {
   admin: "Admin",
@@ -18,7 +19,7 @@ function initials(name: string) {
 }
 
 export default function Header() {
-  const [openMenu, setOpenMenu] = useState<"notif" | "create" | null>(null);
+  const [openMenu, setOpenMenu] = useState<"notif" | "create" | "profile" | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const session = useSession();
 
@@ -149,13 +150,48 @@ export default function Header() {
             </div>
           </div>
 
-          <Link
-            href={session ? roleDashboardPath[session.role] || "/dashboard" : "/"}
-            className="avatar"
-            title={session ? `${session.name} · ${roleLabel[session.role] || session.role}` : "Iniciar sessão"}
-          >
-            {session ? initials(session.name) : "?"}
-          </Link>
+          <div className="create-wrap">
+            <button
+              className="avatar"
+              title={session ? `${session.name} · ${roleLabel[session.role] || session.role}` : "Iniciar sessão"}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!session) {
+                  window.location.href = "/";
+                  return;
+                }
+                setOpenMenu((m) => (m === "profile" ? null : "profile"));
+              }}
+            >
+              {session ? initials(session.name) : "?"}
+            </button>
+            {session && (
+              <div className={`menu ${openMenu === "profile" ? "open" : ""}`}>
+                <div className="menu-cap">{session.name} · {roleLabel[session.role] || session.role}</div>
+                <Link href={settingsPath(session.role)} className="menu-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1Z" /></svg>
+                  Definições da Conta
+                </Link>
+                <Link href="/affiliate" className="menu-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M17 8h4M19 6v4" /></svg>
+                  Afiliados
+                </Link>
+                <Link href={billingPath(session.role)} className="menu-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="14" rx="2" /><path d="M3 10h18" /></svg>
+                  Faturação
+                </Link>
+                <Link href={financePath(session.role)} className="menu-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3M12 18v3M6 8a3 3 0 0 1 3-3h4a3 3 0 1 1 0 6H9a3 3 0 1 0 0 6h6a3 3 0 0 0 3-3" /></svg>
+                  Finanças
+                </Link>
+                <div className="menu-divider" />
+                <button className="menu-item" onClick={() => { clearSession(); window.location.href = "/"; }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></svg>
+                  Sair
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
