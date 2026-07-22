@@ -86,7 +86,7 @@ export default function ProfilePage() {
   const gymInfo = bookableGyms.find((g) => g.name === profile.name);
   const gymClasses = availableClasses.filter((c) => c.gym === profile.name);
   const gymPlans = plansByRole.gym;
-  const shopProducts = profile.role === "shop" ? products.slice(0, 6) : [];
+  const shopRoleProducts = profile.role === "shop" ? products.slice(0, 6) : [];
   const business = nutritionistInfo ? nutritionistBusiness[nutritionistInfo.id] : undefined;
 
   function share() {
@@ -702,7 +702,7 @@ export default function ProfilePage() {
 
         {tab === "Produtos" && profile.role === "shop" && (
           <div className="grid">
-            {shopProducts.map((p) => (
+            {shopRoleProducts.map((p) => (
               <div className="product" key={p.n}>
                 <div className="product-img" style={{ background: catBg[p.c] }}><span style={{ fontSize: 30 }}>{catIcon[p.c]}</span></div>
                 <div className="product-body">
@@ -720,7 +720,7 @@ export default function ProfilePage() {
 
         {tab === "Categorias" && profile.role === "shop" && (
           <div className="pill-row">
-            {[...new Set(shopProducts.map((p) => p.c))].map((c) => (
+            {[...new Set(shopRoleProducts.map((p) => p.c))].map((c) => (
               <span key={c} className="pill" style={{ cursor: "default" }}>{catIcon[c]} {c.replace(/_/g, " ")}</span>
             ))}
           </div>
