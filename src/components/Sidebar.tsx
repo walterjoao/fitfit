@@ -48,6 +48,7 @@ const icons = {
   nearby: <><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" /></>,
   messages: <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />,
   ai: <><path d="M12 3v3M12 18v3M5 5l2 2M17 17l2 2M3 12h3M18 12h3M5 19l2-2M17 7l2-2" /><circle cx="12" cy="12" r="3.2" /></>,
+  marketplace: <><path d="M3 9 12 4l9 5-9 5-9-5Z" /><path d="M5 11v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7" /><path d="M9 21v-6h6v6" /></>,
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />
@@ -63,6 +64,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "nutrition", label: "A Minha Nutrição", href: "/dashboard/athlete/nutrition", icon: icons.nutrition },
     { key: "progress", label: "Progresso", href: "/dashboard/athlete/progress", icon: icons.progress },
     { key: "goals", label: "Objetivos", href: "/dashboard/athlete/goals", icon: icons.goals },
+    { key: "marketplace", label: "Marketplace", href: "/marketplace", icon: icons.marketplace },
     { key: "nearby", label: "Perto de Ti", href: "/dashboard/athlete/nearby", icon: icons.nearby },
     { key: "messages", label: "Mensagens", href: messagesPath("athlete"), icon: icons.messages },
     { key: "settings", label: "Definições", href: "/dashboard/athlete/settings", icon: icons.settings },
