@@ -190,13 +190,18 @@ export const personalWorkouts: PersonalWorkout[] = [
   },
 ];
 
+export type ClassCategory = "Força" | "Cardio" | "Yoga" | "CrossFit" | "Boxe" | "Pilates";
+
 export type FitClass = {
   id: string;
   name: string;
+  category: ClassCategory;
   trainer: string;
+  trainerAvatar: string;
   gym: string;
   date: string;
   time: string;
+  slots: string[];
   seats: number;
   seatsTaken: number;
   rating: number;
@@ -204,17 +209,26 @@ export type FitClass = {
   durationMin: number;
   difficulty: Difficulty;
   description: string;
+  whoFor: string;
+  learn: string[];
+  benefits: string[];
   cover: string;
+  photos: string[];
   price: string;
   location: string;
+  gymRating: number;
+  gymReviews: number;
+  facilities: string[];
 };
 
+export const classCategories: ClassCategory[] = ["Força", "Cardio", "Yoga", "CrossFit", "Boxe", "Pilates"];
+
 export const availableClasses: FitClass[] = [
-  { id: "c1", name: "CrossFit Beginner", trainer: "Nelson Sami", gym: "Power Gym Talatona", date: "24 Jul", time: "07:00", seats: 20, seatsTaken: 18, rating: 4.9, reviews: 62, durationMin: 50, difficulty: "Iniciante", description: "Introdução ao CrossFit com foco em técnica e condicionamento geral.", cover: bgImage(unsplashImages.crossfit[0]), price: "1.500 Kz", location: "Talatona, Luanda" },
-  { id: "c2", name: "Yoga Flow", trainer: "Diana Sacramento", gym: "FitPro Talatona", date: "25 Jul", time: "18:00", seats: 15, seatsTaken: 9, rating: 4.9, reviews: 48, durationMin: 60, difficulty: "Iniciante", description: "Sequência fluida de yoga para flexibilidade e redução de stress.", cover: bgImage(unsplashImages.yoga[0]), price: "1.200 Kz", location: "Talatona, Luanda" },
-  { id: "c3", name: "Boxe Técnico", trainer: "Ricardo Bumba", gym: "Corpo Ativo Fitness Club", date: "26 Jul", time: "19:00", seats: 12, seatsTaken: 11, rating: 4.6, reviews: 30, durationMin: 55, difficulty: "Intermédio", description: "Fundamentos de boxe: postura, jogo de pernas e combinações.", cover: bgImage(unsplashImages.boxing[0]), price: "1.800 Kz", location: "Viana, Luanda" },
-  { id: "c4", name: "Pilates Reformer", trainer: "Marta Neto", gym: "FitPro Talatona", date: "27 Jul", time: "09:00", seats: 10, seatsTaken: 4, rating: 4.7, reviews: 21, durationMin: 45, difficulty: "Iniciante", description: "Fortalecimento do core com equipamento reformer.", cover: bgImage(unsplashImages.pilates[0]), price: "2.000 Kz", location: "Talatona, Luanda" },
-  { id: "c5", name: "Treino Funcional", trainer: "Ana Ferreira", gym: "FitPro Talatona", date: "28 Jul", time: "17:30", seats: 18, seatsTaken: 16, rating: 4.8, reviews: 54, durationMin: 45, difficulty: "Intermédio", description: "Movimentos funcionais de alta intensidade em circuito.", cover: bgImage(unsplashImages.functional[0]), price: "1.500 Kz", location: "Talatona, Luanda" },
+  { id: "c1", name: "CrossFit Beginner", category: "CrossFit", trainer: "Nelson Sami", trainerAvatar: portraitImages.trainer[2], gym: "Power Gym Talatona", date: "24 Jul", time: "07:00", slots: ["Seg 07:00", "Qua 07:00", "Sex 07:00"], seats: 20, seatsTaken: 18, rating: 4.9, reviews: 62, durationMin: 50, difficulty: "Iniciante", description: "Introdução ao CrossFit com foco em técnica e condicionamento geral. Aula estruturada em blocos de força, ginástica e metabólico, adaptada para quem está a começar.", whoFor: "Atletas iniciantes que querem aprender a técnica correta dos movimentos de CrossFit em ambiente seguro e motivador.", learn: ["Técnica de agachamento e levantamento", "Fundamentos de ginástica (kip, pull-up)", "Estratégias de ritmo em WODs"], benefits: ["💪 Ganho de força geral", "🔥 Alta queima calórica", "⚡ Melhor condicionamento", "🤝 Comunidade motivadora"], cover: bgImage(unsplashImages.crossfit[0]), photos: [unsplashImages.crossfit[1], unsplashImages.crossfit[2], unsplashImages.gym[0]], price: "1.500 Kz", location: "Talatona, Luanda", gymRating: 4.8, gymReviews: 210, facilities: ["Sala de CrossFit", "Balneários", "Loja de suplementos"] },
+  { id: "c2", name: "Yoga Flow", category: "Yoga", trainer: "Diana Sacramento", trainerAvatar: portraitImages.nutritionist[1], gym: "FitPro Talatona", date: "25 Jul", time: "18:00", slots: ["Ter 18:00", "Qui 18:00", "Dom 09:00"], seats: 15, seatsTaken: 9, rating: 4.9, reviews: 48, durationMin: 60, difficulty: "Iniciante", description: "Sequência fluida de yoga para flexibilidade, equilíbrio e redução de stress, com foco na respiração.", whoFor: "Qualquer pessoa à procura de mais flexibilidade, calma mental e alívio de tensões do dia a dia.", learn: ["Respiração consciente (pranayama)", "Sequências de vinyasa flow", "Posturas de equilíbrio e alongamento"], benefits: ["🧘 Mais flexibilidade", "😌 Redução de stress", "⚖️ Melhor equilíbrio", "💤 Melhor sono"], cover: bgImage(unsplashImages.yoga[0]), photos: [unsplashImages.yoga[1], unsplashImages.yoga[2]], price: "1.200 Kz", location: "Talatona, Luanda", gymRating: 4.7, gymReviews: 180, facilities: ["Sala de yoga climatizada", "Tapetes incluídos", "Balneários"] },
+  { id: "c3", name: "Boxe Técnico", category: "Boxe", trainer: "Ricardo Bumba", trainerAvatar: portraitImages.trainer[1], gym: "Corpo Ativo Fitness Club", date: "26 Jul", time: "19:00", slots: ["Seg 19:00", "Qua 19:00"], seats: 12, seatsTaken: 11, rating: 4.6, reviews: 30, durationMin: 55, difficulty: "Intermédio", description: "Fundamentos de boxe: postura, jogo de pernas, defesa e combinações no saco e em pares.", whoFor: "Atletas com alguma experiência de treino que querem melhorar coordenação, reflexos e condição física.", learn: ["Postura e guarda", "Combinações de soco", "Jogo de pernas e defesa"], benefits: ["🥊 Melhor coordenação", "🔥 Alta queima calórica", "⚡ Reflexos mais rápidos", "💪 Força de core"], cover: bgImage(unsplashImages.boxing[0]), photos: [unsplashImages.boxing[1], unsplashImages.boxing[2]], price: "1.800 Kz", location: "Viana, Luanda", gymRating: 4.5, gymReviews: 95, facilities: ["Ringue", "Sacos de boxe", "Balneários"] },
+  { id: "c4", name: "Pilates Reformer", category: "Pilates", trainer: "Marta Neto", trainerAvatar: portraitImages.nutritionist[2], gym: "FitPro Talatona", date: "27 Jul", time: "09:00", slots: ["Ter 09:00", "Sex 09:00"], seats: 10, seatsTaken: 4, rating: 4.7, reviews: 21, durationMin: 45, difficulty: "Iniciante", description: "Fortalecimento do core e alongamento global com equipamento reformer, em grupo reduzido.", whoFor: "Quem procura tonificação, melhor postura e fortalecimento do core sem impacto nas articulações.", learn: ["Ativação do core", "Controlo postural", "Uso correto do reformer"], benefits: ["💪 Core mais forte", "🧍 Melhor postura", "🤸 Mais mobilidade", "🩹 Baixo impacto"], cover: bgImage(unsplashImages.pilates[0]), photos: [unsplashImages.pilates[1], unsplashImages.pilates[2]], price: "2.000 Kz", location: "Talatona, Luanda", gymRating: 4.7, gymReviews: 180, facilities: ["Reformers", "Sala climatizada", "Balneários"] },
+  { id: "c5", name: "Treino Funcional", category: "Força", trainer: "Ana Ferreira", trainerAvatar: portraitImages.trainer[0], gym: "FitPro Talatona", date: "28 Jul", time: "17:30", slots: ["Seg 17:30", "Qua 17:30", "Sex 17:30"], seats: 18, seatsTaken: 16, rating: 4.8, reviews: 54, durationMin: 45, difficulty: "Intermédio", description: "Movimentos funcionais de alta intensidade em formato de circuito, com pesos livres e peso corporal.", whoFor: "Atletas intermédios que querem ganhar força funcional e condicionamento em simultâneo.", learn: ["Circuitos de força funcional", "Transições entre estações", "Técnica de levantamento com kettlebell"], benefits: ["💪 Força funcional", "🔥 Alta queima calórica", "⚡ Mais explosão", "🏋️ Melhor performance"], cover: bgImage(unsplashImages.functional[0]), photos: [unsplashImages.gym[1], unsplashImages.gym[2]], price: "1.500 Kz", location: "Talatona, Luanda", gymRating: 4.7, gymReviews: 180, facilities: ["Sala funcional", "Kettlebells e cordas", "Balneários"] },
 ];
 
 export const myClasses = {
@@ -227,11 +241,18 @@ export const myClasses = {
   ],
 };
 
-export type BookableTrainer = { id: string; name: string; specialty: string; rating: number; reviews: number; price: string; durationMin: number; description: string; availability: string[]; cover: string };
+export type Review = { name: string; rating: number; text: string };
+
+export type BookableTrainer = {
+  id: string; name: string; specialty: string; rating: number; reviews: number; price: string; durationMin: number;
+  description: string; availability: string[]; cover: string; photo: string; sessionType: "Presencial" | "Online";
+  experienceYears: number; followers: number; certifications: string[]; perfectFor: string[];
+  benefits: string[]; photos: string[]; reviewList: Review[];
+};
 export const bookableTrainers: BookableTrainer[] = [
-  { id: "t1", name: "Ana Ferreira", specialty: "Força e hipertrofia", rating: 4.9, reviews: 84, price: "8.500 Kz", durationMin: 60, description: "Treino privado focado em ganho de massa muscular e técnica.", availability: ["Hoje 18:00", "Amanhã 07:00", "Amanhã 18:00"], cover: bgImage(portraitImages.trainer[0]) },
-  { id: "t2", name: "Rui Ferreira", specialty: "Hipertrofia", rating: 4.7, reviews: 52, price: "7.000 Kz", durationMin: 60, description: "Sessões individuais com planos de progressão personalizados.", availability: ["Amanhã 09:00", "Qui 17:00"], cover: bgImage(portraitImages.trainer[1]) },
-  { id: "t3", name: "Nelson Sami", specialty: "Performance e CrossFit", rating: 4.8, reviews: 41, price: "9.000 Kz", durationMin: 50, description: "Treino de alta performance para atletas de CrossFit.", availability: ["Hoje 20:00", "Sex 07:00"], cover: bgImage(portraitImages.trainer[2]) },
+  { id: "t1", name: "Ana Ferreira", specialty: "Força e Hipertrofia", rating: 4.9, reviews: 84, price: "8.500 Kz", durationMin: 60, description: "Treino privado focado em ganho de massa muscular, força e técnica de levantamento.", availability: ["Hoje 18:00", "Amanhã 07:00", "Amanhã 18:00", "Qui 07:00"], cover: bgImage(portraitImages.trainer[0]), photo: portraitImages.trainer[0], sessionType: "Presencial", experienceYears: 8, followers: 1240, certifications: ["Personal Trainer Certificado (IFBB)", "Especialista em Hipertrofia"], perfectFor: ["Iniciantes", "Ganho de massa muscular", "Melhoria de técnica"], benefits: ["💪 Ganho de força", "🔥 Composição corporal", "📈 Progressão de carga acompanhada"], photos: [unsplashImages.strength[1], unsplashImages.strength[2]], reviewList: [{ name: "Tiago Kiala", rating: 5, text: "Excelente acompanhamento, evolução visível em 2 meses." }, { name: "Beatriz Chiapa", rating: 5, text: "Muito atenta à técnica, recomendo." }] },
+  { id: "t2", name: "Rui Ferreira", specialty: "Hipertrofia", rating: 4.7, reviews: 52, price: "7.000 Kz", durationMin: 60, description: "Sessões individuais com planos de progressão personalizados e acompanhamento contínuo.", availability: ["Amanhã 09:00", "Qui 17:00"], cover: bgImage(portraitImages.trainer[1]), photo: portraitImages.trainer[1], sessionType: "Presencial", experienceYears: 5, followers: 610, certifications: ["Personal Trainer Certificado"], perfectFor: ["Hipertrofia", "Reeducação de movimento"], benefits: ["💪 Mais massa muscular", "🏋️ Melhor performance"], photos: [unsplashImages.strength[0]], reviewList: [{ name: "Ricardo Bumba", rating: 4.5, text: "Ótimo profissional, muito pontual." }] },
+  { id: "t3", name: "Nelson Sami", specialty: "Performance e CrossFit", rating: 4.8, reviews: 41, price: "9.000 Kz", durationMin: 50, description: "Treino de alta performance para atletas de CrossFit e desportos de combate.", availability: ["Hoje 20:00", "Sex 07:00"], cover: bgImage(portraitImages.trainer[2]), photo: portraitImages.trainer[2], sessionType: "Presencial", experienceYears: 6, followers: 890, certifications: ["CrossFit Level 2", "Preparador Físico"], perfectFor: ["Atletas CrossFit", "Alta performance"], benefits: ["⚡ Explosão e potência", "🔥 Condicionamento avançado"], photos: [unsplashImages.crossfit[1]], reviewList: [{ name: "André Katumba", rating: 5, text: "Treinos intensos e muito bem estruturados." }] },
 ];
 
 export type BookableGym = { id: string; name: string; location: string; price: string; durationMin: number; description: string; availability: string[]; cover: string };
@@ -240,8 +261,13 @@ export const bookableGyms: BookableGym[] = [
   { id: "g2", name: "Corpo Ativo Fitness Club", location: "Viana, Luanda", price: "1.200 Kz", durationMin: 90, description: "Ginásio completo com aulas de grupo incluídas.", availability: ["Hoje 07:00–21:00"], cover: bgImage(unsplashImages.gym[1]) },
 ];
 
-export type BookableNutritionist = { id: string; name: string; specialty: string; rating: number; reviews: number; price: string; durationMin: number; description: string; availability: string[]; cover: string };
+export type BookableNutritionist = {
+  id: string; name: string; specialty: string; rating: number; reviews: number; price: string; durationMin: number;
+  description: string; availability: string[]; cover: string; photo: string; sessionType: "Presencial" | "Online";
+  experienceYears: number; followers: number; certifications: string[]; perfectFor: string[];
+  benefits: string[]; photos: string[]; reviewList: Review[];
+};
 export const bookableNutritionists: BookableNutritionist[] = [
-  { id: "n1", name: "Inês Gonçalves", specialty: "Nutrição desportiva", rating: 4.9, reviews: 46, price: "6.500 Kz", durationMin: 40, description: "Planos nutricionais personalizados para atletas e alto rendimento.", availability: ["Qui 14:00", "Sex 10:00"], cover: bgImage(portraitImages.nutritionist[0]) },
-  { id: "n2", name: "Diana Sacramento", specialty: "Perda de peso", rating: 4.6, reviews: 30, price: "5.500 Kz", durationMin: 40, description: "Acompanhamento nutricional focado em perda de peso sustentável.", availability: ["Amanhã 15:00"], cover: bgImage(portraitImages.nutritionist[1]) },
+  { id: "n1", name: "Inês Gonçalves", specialty: "Nutrição Desportiva", rating: 4.9, reviews: 46, price: "6.500 Kz", durationMin: 40, description: "Planos nutricionais personalizados para atletas e alto rendimento.", availability: ["Qui 14:00", "Sex 10:00"], cover: bgImage(portraitImages.nutritionist[0]), photo: portraitImages.nutritionist[0], sessionType: "Online", experienceYears: 7, followers: 720, certifications: ["Nutricionista Desportiva Certificada"], perfectFor: ["Atletas de rendimento", "Ganho de massa magra"], benefits: ["🥗 Plano nutricional à medida", "📊 Acompanhamento semanal"], photos: [unsplashImages.nutrition[0], unsplashImages.meals[0]], reviewList: [{ name: "Marta Neto", rating: 5, text: "Plano fácil de seguir, resultados reais." }] },
+  { id: "n2", name: "Diana Sacramento", specialty: "Perda de Peso", rating: 4.6, reviews: 30, price: "5.500 Kz", durationMin: 40, description: "Acompanhamento nutricional focado em perda de peso sustentável.", availability: ["Amanhã 15:00"], cover: bgImage(portraitImages.nutritionist[1]), photo: portraitImages.nutritionist[1], sessionType: "Online", experienceYears: 4, followers: 340, certifications: ["Nutricionista Clínica"], perfectFor: ["Perda de peso", "Reeducação alimentar"], benefits: ["⚖️ Perda de peso sustentável", "🍽️ Reeducação alimentar"], photos: [unsplashImages.nutrition[1]], reviewList: [{ name: "Diana Sacramento", rating: 4.5, text: "Muito paciente e clara nas explicações." }] },
 ];

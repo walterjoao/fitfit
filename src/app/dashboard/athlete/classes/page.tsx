@@ -7,7 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import WorkoutsSubNav from "@/components/WorkoutsSubNav";
 import { useRoleGuard } from "@/lib/session";
 import { notifyAndEmail } from "@/lib/notifications";
-import { availableClasses, myClasses } from "@/lib/workoutsData";
+import { availableClasses, myClasses, classCategories, type ClassCategory } from "@/lib/workoutsData";
 
 type SortKey = "rating" | "price" | "soon";
 
@@ -17,6 +17,7 @@ export default function ClassesPage() {
   const [joined, setJoined] = useState<string[]>(myClasses.upcoming.map((c) => c.id));
   const [cancelled, setCancelled] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<ClassCategory | "all">("all");
   const [sort, setSort] = useState<SortKey>("soon");
 
   if (!ready) return null;
@@ -31,7 +32,9 @@ export default function ClassesPage() {
   const visibleClasses = availableClasses
     .filter((c) => {
       const q = query.toLowerCase();
-      return !q || c.name.toLowerCase().includes(q) || c.trainer.toLowerCase().includes(q) || c.gym.toLowerCase().includes(q);
+      const matchesQuery = !q || c.name.toLowerCase().includes(q) || c.trainer.toLowerCase().includes(q) || c.gym.toLowerCase().includes(q);
+      const matchesCategory = category === "all" || c.category === category;
+      return matchesQuery && matchesCategory;
     })
     .sort((a, b) => {
       if (sort === "rating") return b.rating - a.rating;
@@ -53,7 +56,7 @@ export default function ClassesPage() {
       <div className="shell">
         <div className="page-head" style={{ paddingTop: 22 }}>
           <h1>Aulas</h1>
-          <p>Descobre e junta-te a aulas de fitness perto de ti.</p>
+          <p>Descobre e reserva aulas de fitness com os melhores treinadores e ginásios perto de ti.</p>
         </div>
 
         <WorkoutsSubNav />
@@ -64,17 +67,25 @@ export default function ClassesPage() {
         </div>
 
         {tab === "available" && (
-          <div style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
-            <div className="search" style={{ maxWidth: 320 }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar por nome, treinador ou ginásio…" />
+          <>
+            <div style={{ display: "flex", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+              <div className="search" style={{ maxWidth: 320 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Procurar por nome, treinador ou ginásio…" />
+              </div>
+              <select className="field-input" style={{ maxWidth: 220 }} value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+                <option value="soon">Ordenar: Em breve</option>
+                <option value="rating">Ordenar: Melhor avaliadas</option>
+                <option value="price">Ordenar: Mais baratas</option>
+              </select>
             </div>
-            <select className="field-input" style={{ maxWidth: 220 }} value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
-              <option value="soon">Ordenar: Em breve</option>
-              <option value="rating">Ordenar: Melhor avaliadas</option>
-              <option value="price">Ordenar: Mais baratas</option>
-            </select>
-          </div>
+            <div className="pill-row">
+              <button className={`pill ${category === "all" ? "active" : ""}`} onClick={() => setCategory("all")}>Todas</button>
+              {classCategories.map((cat) => (
+                <button key={cat} className={`pill ${category === cat ? "active" : ""}`} onClick={() => setCategory(cat)}>{cat}</button>
+              ))}
+            </div>
+          </>
         )}
 
         {tab === "available" ? (
@@ -89,12 +100,14 @@ export default function ClassesPage() {
                 <Link href={`/dashboard/athlete/classes/${c.id}`} key={c.id} className="rich-card" style={{ textDecoration: "none", color: "inherit" }}>
                   <div className="rich-cover" style={{ background: c.cover }}>
                     <span className="rich-badge">{c.difficulty}</span>
-                    <span className="rich-cover-icon">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3v18l15-9L5 3Z" /></svg>
-                    </span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={c.trainerAvatar} alt={c.trainer} className="mk-cover-avatar" />
                   </div>
                   <div className="rich-body">
                     <div className="rich-title">{c.name}</div>
+                    <div className="rich-meta-row">
+                      <span>Com {c.trainer}</span>
+                    </div>
                     <div className="rich-meta-row">
                       <span>{c.gym}</span>
                     </div>
@@ -103,10 +116,14 @@ export default function ClassesPage() {
                       <span>⏱ {c.durationMin} min</span>
                     </div>
                     <div className="rich-meta-row" style={{ justifyContent: "space-between" }}>
-                      <span className={`class-seats ${state}`}>{c.seatsTaken}/{c.seats} atletas</span>
+                      <span className={`class-seats ${state}`}>{c.seatsTaken}/{c.seats} vagas</span>
                       <span className="product-price tabular">{c.price}</span>
                     </div>
+                    <div className="rich-meta-row">
+                      <span>📅 {c.date} · {c.time}</span>
+                    </div>
                     <div className="rich-actions">
+                      <span className="btn btn-ghost btn-sm" style={{ flex: 1, textAlign: "center" }}>Ver Aula</span>
                       <button
                         type="button"
                         className={`btn ${isJoined ? "btn-ghost" : "btn-primary"} btn-sm`}
@@ -116,7 +133,7 @@ export default function ClassesPage() {
                           setJoined((j) => (isJoined ? j.filter((x) => x !== c.id) : [...j, c.id]));
                         }}
                       >
-                        {isJoined ? "Inscrito ✓" : "Juntar-me"}
+                        {isJoined ? "Inscrito ✓" : "Reservar"}
                       </button>
                     </div>
                   </div>
