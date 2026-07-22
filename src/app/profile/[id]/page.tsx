@@ -12,6 +12,15 @@ import { bookableTrainers, bookableGyms, bookableNutritionists, availableClasses
 import { products, catIcon, catBg, stockLabel } from "@/lib/data";
 import { plansByRole, messagesPath } from "@/lib/accountData";
 import { nutritionistBusiness } from "@/lib/nutritionistBusiness";
+import { seedWeightLog, exercisePRs as seedPRs, type ExercisePR } from "@/lib/progressData";
+import {
+  getProfileOverride, saveProfileOverride, goalOptions, levelOptions,
+  getPRs, addPR, removePR,
+  getFeed, addFeedPost, removeFeedPost, toggleLike, type FeedPost,
+  allBadgesWithVisibility, toggleBadgeVisibility,
+} from "@/lib/athleteProfileData";
+import { myClasses } from "@/lib/workoutsData";
+import { shopProducts, isWishlisted } from "@/lib/data";
 
 const roleLabel: Record<string, string> = {
   athlete: "Atleta",
@@ -26,7 +35,7 @@ function initials(name: string) {
 }
 
 const tabsByRole: Record<string, string[]> = {
-  athlete: ["Overview", "Treinos", "Conteúdo", "Progresso", "Conquistas"],
+  athlete: ["Overview", "Atividade", "Treinos", "Recordes", "Conteúdo", "Progresso", "Conquistas", "Marcações", "Loja"],
   trainer: ["Overview", "Serviços", "Agenda", "Preços", "Reviews", "Conteúdo"],
   nutritionist: ["Overview", "Sobre", "Serviços", "Planos", "Receitas", "Resultados", "Agenda", "Reviews", "Contacto"],
   gym: ["Overview", "Galeria", "Serviços", "Treinadores", "Aulas", "Planos", "Reviews"],
@@ -40,10 +49,21 @@ export default function ProfilePage() {
   const [following, setFollowing] = useState(false);
   const [tab, setTab] = useState("Overview");
   const [shared, setShared] = useState(false);
+  const [editingHeader, setEditingHeader] = useState(false);
+  const [override, setOverride] = useState(getProfileOverride());
+  const [prs, setPrs] = useState<ExercisePR[]>(seedPRs);
+  const [newPR, setNewPR] = useState({ exercise: "", before: "", after: "" });
+  const [feed, setFeed] = useState<FeedPost[]>([]);
+  const [newPost, setNewPost] = useState("");
+  const [badgeList, setBadgeList] = useState(allBadgesWithVisibility());
 
   useEffect(() => {
     if (profile) setFollowing(isFollowing(profile.id));
+    setPrs(getPRs());
+    setFeed(getFeed());
   }, [profile]);
+
+  const isOwner = !!session && !!profile && profile.role === "athlete" && session.name === profile.name;
 
   if (session === undefined) return null;
   if (!session) {
@@ -99,15 +119,51 @@ export default function ProfilePage() {
                 {nutritionistInfo ? (
                   <div className="featured-meta">
                     <span>{nutritionistInfo.specialty}</span>
-                    <span>📍 {profile.location}</span>
+                    <span>📍 {override.location || profile.location}</span>
                     <span className="rich-badge" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>{nutritionistInfo.sessionType}</span>
                   </div>
                 ) : (
-                  <div className="featured-meta"><span>📍 {profile.location}</span></div>
+                  <div className="featured-meta">
+                    <span>📍 {override.location || profile.location}</span>
+                    {isOwner && (override.goal || "Cutting") && <span className="rich-badge" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>🎯 {override.goal || "Cutting"}</span>}
+                    {isOwner && <span className="rich-badge">{override.level || "Intermédio"}</span>}
+                  </div>
                 )}
               </div>
             </div>
-            <p style={{ fontSize: 13, color: "var(--text-dim)", lineHeight: 1.6, maxWidth: 560 }}>{profile.bio}</p>
+
+            {isOwner && editingHeader ? (
+              <div className="dash-panel" style={{ padding: 18, maxWidth: 560 }}>
+                <div className="form-grid">
+                  <label className="field" style={{ gridColumn: "1 / -1" }}>
+                    <span className="field-label">Bio</span>
+                    <input className="field-input" value={override.bio ?? profile.bio} onChange={(e) => setOverride((o) => ({ ...o, bio: e.target.value }))} />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Localização</span>
+                    <input className="field-input" value={override.location ?? profile.location} onChange={(e) => setOverride((o) => ({ ...o, location: e.target.value }))} />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Objetivo</span>
+                    <select className="field-input" value={override.goal || goalOptions[0]} onChange={(e) => setOverride((o) => ({ ...o, goal: e.target.value }))}>
+                      {goalOptions.map((g) => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Nível</span>
+                    <select className="field-input" value={override.level || levelOptions[1]} onChange={(e) => setOverride((o) => ({ ...o, level: e.target.value }))}>
+                      {levelOptions.map((l) => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </label>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <button className="btn btn-primary btn-sm" onClick={() => { saveProfileOverride(override); setEditingHeader(false); }}>Guardar</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setEditingHeader(false)}>Cancelar</button>
+                </div>
+              </div>
+            ) : (
+              <p style={{ fontSize: 13, color: "var(--text-dim)", lineHeight: 1.6, maxWidth: 560 }}>{override.bio ?? profile.bio}</p>
+            )}
             <div className="featured-meta">
               {nutritionistInfo && business ? (
                 <>
@@ -125,7 +181,9 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="featured-actions">
-              {nutritionistInfo ? (
+              {isOwner ? (
+                <button className="btn btn-primary" onClick={() => setEditingHeader((v) => !v)}>Editar Perfil</button>
+              ) : nutritionistInfo ? (
                 <Link href={`/dashboard/athlete/book/${nutritionistInfo.id}`} className="btn btn-primary">Marcar Consulta</Link>
               ) : (
                 <button
@@ -164,6 +222,28 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {tab === "Overview" && profile.role === "athlete" && (
+          <div className="stat-grid" style={{ marginBottom: 20 }}>
+            {isOwner && editingHeader ? (
+              <div className="dash-panel" style={{ gridColumn: "1 / -1", padding: 16 }}>
+                <div className="form-grid">
+                  <label className="field"><span className="field-label">Peso (kg)</span><input className="field-input" type="number" defaultValue={override.weightKg ?? seedWeightLog[seedWeightLog.length - 1]?.kg} onChange={(e) => setOverride((o) => ({ ...o, weightKg: Number(e.target.value) }))} /></label>
+                  <label className="field"><span className="field-label">Altura (cm)</span><input className="field-input" type="number" defaultValue={override.heightCm ?? 178} onChange={(e) => setOverride((o) => ({ ...o, heightCm: Number(e.target.value) }))} /></label>
+                  <label className="field"><span className="field-label">% Gordura Corporal</span><input className="field-input" type="number" defaultValue={override.bodyFatPct ?? 16} onChange={(e) => setOverride((o) => ({ ...o, bodyFatPct: Number(e.target.value) }))} /></label>
+                  <label className="field"><span className="field-label">Treinos/semana</span><input className="field-input" type="number" defaultValue={override.trainingFreq ?? 5} onChange={(e) => setOverride((o) => ({ ...o, trainingFreq: Number(e.target.value) }))} /></label>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="stat-card"><div className="stat-top"><span className="stat-label">⚖️ Peso</span></div><div className="stat-value tabular">{override.weightKg ?? seedWeightLog[seedWeightLog.length - 1]?.kg}kg</div></div>
+                <div className="stat-card"><div className="stat-top"><span className="stat-label">📏 Altura</span></div><div className="stat-value tabular">{override.heightCm ?? 178}cm</div></div>
+                <div className="stat-card"><div className="stat-top"><span className="stat-label">🔥 Sequência Ativa</span></div><div className="stat-value tabular">{Math.round(profile.followers / 30)} dias</div></div>
+                <div className="stat-card"><div className="stat-top"><span className="stat-label">📅 Frequência</span></div><div className="stat-value tabular">{override.trainingFreq ?? 5}x / semana</div></div>
+              </>
+            )}
+          </div>
+        )}
+
         {tab === "Overview" && (
           <div className="dash-row">
             <div className="dash-panel">
@@ -193,6 +273,134 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {tab === "Atividade" && profile.role === "athlete" && (
+          <div style={{ maxWidth: 640 }}>
+            {isOwner && (
+              <div className="dash-panel" style={{ padding: 16, marginBottom: 16 }}>
+                <label className="field" style={{ marginBottom: 10 }}>
+                  <span className="field-label">Nova publicação</span>
+                  <input className="field-input" value={newPost} onChange={(e) => setNewPost(e.target.value)} placeholder="Partilha um treino, foto ou conquista…" />
+                </label>
+                <button
+                  className="btn btn-primary btn-sm"
+                  disabled={!newPost.trim()}
+                  onClick={() => { setFeed(addFeedPost(newPost.trim(), "update")); setNewPost(""); }}
+                >
+                  Publicar
+                </button>
+              </div>
+            )}
+            {feed.length === 0 && <p style={{ fontSize: 12.5, color: "var(--text-faint)" }}>Ainda sem publicações.</p>}
+            {feed.map((p) => (
+              <div className="dash-panel" style={{ padding: 16, marginBottom: 12 }} key={p.id}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, color: "var(--text-faint)" }}>{p.date}</span>
+                  {isOwner && (
+                    <button className="icon-action" title="Eliminar" onClick={() => setFeed(removeFeedPost(p.id))}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                    </button>
+                  )}
+                </div>
+                <p style={{ fontSize: 13.5, marginBottom: 10 }}>{p.caption}</p>
+                <div className="rich-meta-row">
+                  <button className="btn btn-ghost btn-sm" onClick={() => setFeed(toggleLike(p.id))}>{p.liked ? "❤️" : "🤍"} {p.likes}</button>
+                  <span>💬 {p.comments} comentários</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Recordes" && profile.role === "athlete" && (
+          <div style={{ maxWidth: 560 }}>
+            {isOwner && (
+              <div className="dash-panel" style={{ padding: 16, marginBottom: 16 }}>
+                <div className="form-grid" style={{ marginBottom: 10 }}>
+                  <input className="field-input" placeholder="Exercício" value={newPR.exercise} onChange={(e) => setNewPR((n) => ({ ...n, exercise: e.target.value }))} />
+                  <input className="field-input" placeholder="Anterior (kg)" type="number" value={newPR.before} onChange={(e) => setNewPR((n) => ({ ...n, before: e.target.value }))} />
+                  <input className="field-input" placeholder="Atual (kg)" type="number" value={newPR.after} onChange={(e) => setNewPR((n) => ({ ...n, after: e.target.value }))} />
+                </div>
+                <button
+                  className="btn btn-primary btn-sm"
+                  disabled={!newPR.exercise}
+                  onClick={() => {
+                    setPrs(addPR({ exercise: newPR.exercise, before: Number(newPR.before) || 0, after: Number(newPR.after) || 0, date: new Date().toISOString().slice(0, 10) }));
+                    setNewPR({ exercise: "", before: "", after: "" });
+                  }}
+                >
+                  Adicionar Recorde
+                </button>
+              </div>
+            )}
+            <div className="dash-panel">
+              <div className="dash-panel-head"><h2>Recordes Pessoais</h2><span>{prs.length}</span></div>
+              <div className="dash-panel-body">
+                {prs.map((pr) => (
+                  <div className="schedule-item" key={pr.exercise}>
+                    <span className="schedule-dot" />
+                    <div className="schedule-body">
+                      <p>{pr.exercise}</p>
+                      <span>{pr.before}kg → {pr.after}kg · {pr.date}</span>
+                    </div>
+                    {isOwner && (
+                      <button className="icon-action" title="Remover" onClick={() => setPrs(removePR(pr.exercise))} style={{ marginLeft: "auto" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "Marcações" && profile.role === "athlete" && isOwner && (
+          <div className="dash-row">
+            <div className="dash-panel">
+              <div className="dash-panel-head"><h2>Próximas Sessões</h2><span>{myClasses.upcoming.length}</span></div>
+              <div className="dash-panel-body">
+                {myClasses.upcoming.map((c) => (
+                  <div className="schedule-item" key={c.id}>
+                    <span className="schedule-dot" />
+                    <div className="schedule-body"><p>{c.name}</p><span>{c.date} · {c.time} · {c.location}</span></div>
+                    <Link href="/dashboard/athlete/classes" className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }}>Ver</Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="dash-panel">
+              <div className="dash-panel-head"><h2>Profissionais Favoritos</h2></div>
+              <div className="dash-panel-body">
+                {bookableTrainers.slice(0, 3).map((t) => (
+                  <div className="schedule-item" key={t.id}>
+                    <span className="schedule-dot" />
+                    <div className="schedule-body"><p>{t.name}</p><span>{t.specialty} · ⭐ {t.rating.toFixed(1)}</span></div>
+                    <Link href={`/dashboard/athlete/book/${t.id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }}>Reservar</Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "Loja" && profile.role === "athlete" && isOwner && (
+          <div className="dash-panel">
+            <div className="dash-panel-head"><h2>Favoritos & Wishlist</h2></div>
+            <div className="rich-grid" style={{ padding: 16 }}>
+              {shopProducts.filter((p) => isWishlisted(p.id)).length === 0 && <p style={{ fontSize: 12.5, color: "var(--text-faint)" }}>Sem produtos guardados ainda.</p>}
+              {shopProducts.filter((p) => isWishlisted(p.id)).map((p) => (
+                <Link href={`/dashboard/athlete/shop/${p.id}`} key={p.id} className="rich-card" style={{ textDecoration: "none", color: "inherit" }}>
+                  <div className="rich-cover" style={{ background: `url(${p.images[0]}) center/cover no-repeat` }} />
+                  <div className="rich-body">
+                    <div className="rich-title">{p.name}</div>
+                    <div className="rich-meta-row"><span>{p.storeName}</span></div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {tab === "Treinos" && profile.role === "athlete" && (
           <div className="dash-panel">
             <div className="dash-panel-head"><h2>Estatísticas de Treino</h2></div>
@@ -217,7 +425,27 @@ export default function ProfilePage() {
           <div className="ai-box"><div className="ai-icon">📈</div><p>O progresso detalhado deste atleta é privado. Segue-o para veres atualizações públicas na tua timeline.</p></div>
         )}
 
-        {tab === "Conquistas" && (
+        {tab === "Conquistas" && profile.role === "athlete" && (
+          <div className="badge-grid">
+            {badgeList.filter((b) => isOwner || !b.hidden).map((b) => (
+              <div className="badge-card" key={b.id} style={{ opacity: b.hidden ? 0.4 : 1, position: "relative" }}>
+                <div className="badge-card-icon">{b.icon}</div>
+                <div className="badge-card-label">{b.label}</div>
+                {isOwner && (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    style={{ marginTop: 8 }}
+                    onClick={() => { toggleBadgeVisibility(b.id); setBadgeList(allBadgesWithVisibility()); }}
+                  >
+                    {b.hidden ? "Mostrar" : "Ocultar"}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Conquistas" && profile.role !== "athlete" && (
           <div className="badge-grid">
             <div className="badge-card"><div className="badge-card-icon">🔥</div><div className="badge-card-label">Sequência ativa</div></div>
             <div className="badge-card"><div className="badge-card-icon">🏅</div><div className="badge-card-label">{profile.reviews}+ avaliações</div></div>
