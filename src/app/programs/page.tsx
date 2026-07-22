@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { useRoleGuard } from "@/lib/session";
@@ -13,7 +12,6 @@ type Tab = "workouts" | "classes" | "assign";
 
 export default function ProgramsPage() {
   const { ready } = useRoleGuard("trainer");
-  const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>("workouts");
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -27,7 +25,7 @@ export default function ProgramsPage() {
   useEffect(() => {
     setClasses(getClasses());
     setAssignments(getAssignments());
-    const preselect = searchParams.get("athlete");
+    const preselect = new URLSearchParams(window.location.search).get("athlete");
     if (preselect) {
       setTab("assign");
       setSelectedTrainees([preselect]);
