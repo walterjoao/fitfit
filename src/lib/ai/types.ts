@@ -1,4 +1,4 @@
-export type Role = "athlete" | "trainer" | "nutritionist" | "gym";
+export type Role = "athlete" | "trainer" | "nutritionist" | "gym" | "shop";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 

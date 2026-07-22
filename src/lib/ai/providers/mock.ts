@@ -6,6 +6,7 @@ const roleLabel: Record<AIContext["userRole"], string> = {
   trainer: "personal trainer",
   nutritionist: "nutricionista",
   gym: "ginásio",
+  shop: "lojista",
 };
 
 export const mockProvider: AIProvider = {

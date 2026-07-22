@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { askAI } from "@/lib/ai/manager";
 import type { ChatMessage, Role } from "@/lib/ai/types";
 
-const validRoles: Role[] = ["athlete", "trainer", "nutritionist", "gym"];
+const validRoles: Role[] = ["athlete", "trainer", "nutritionist", "gym", "shop"];
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 type Tab = "login" | "signup";
 type Step = "role" | "form";
-type Role = "athlete" | "nutritionist" | "trainer" | "gym";
+type Role = "athlete" | "nutritionist" | "trainer" | "gym" | "shop";
 
 const roles: { key: Role; title: string; description: string; icon: ReactElement }[] = [
   {
@@ -52,6 +52,17 @@ const roles: { key: Role; title: string; description: string; icon: ReactElement
         <path d="M3 21h18" />
         <path d="M5 21V7l7-4 7 4v14" />
         <path d="M9 21v-6h6v6" />
+      </>
+    ),
+  },
+  {
+    key: "shop",
+    title: "Loja",
+    description: "Vende suplementos e equipamento diretamente na Loja FitPro.",
+    icon: (
+      <>
+        <path d="M3 9 12 4l9 5-9 5-9-5Z" />
+        <path d="M3 9v6l9 5 9-5V9" />
       </>
     ),
   },
@@ -108,6 +119,7 @@ const roleDashboard: Record<Role, string> = {
   trainer: "/dashboard",
   nutritionist: "/dashboard/nutritionist",
   gym: "/dashboard/gym",
+  shop: "/dashboard/shop",
 };
 
 const roleDashboardAny: Record<string, string> = {
@@ -304,7 +316,18 @@ export default function LoginPage() {
                   </>
                 )}
 
-                <button className="auth-submit" onClick={() => router.push(roleDashboard[role])}>Criar conta</button>
+                {role === "shop" && (
+                  <>
+                    <Field label="Nome da loja" placeholder="Ex: SupleForte" />
+                    <Field label="Nome do proprietário" placeholder="O teu nome" />
+                    <Field label="Email" type="email" placeholder="tu@email.com" />
+                    <Field label="Palavra-passe" type="password" placeholder="••••••••" />
+                    <Field label="Categoria principal" placeholder="Ex: Suplementos" />
+                    <Field label="Localização" placeholder="Ex: Luanda, Angola" />
+                  </>
+                )}
+
+                <button className="auth-submit" onClick={() => router.push(roleDashboardAny[role])}>Criar conta</button>
               </div>
             )}
           </div>

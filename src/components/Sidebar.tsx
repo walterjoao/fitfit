@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 
-export type Role = "athlete" | "trainer" | "nutritionist" | "gym" | "admin";
+export type Role = "athlete" | "trainer" | "nutritionist" | "gym" | "shop" | "admin";
 
 type NavItem = {
   key: string;
@@ -40,6 +40,9 @@ const icons = {
   classes: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>,
   subscriptions: <><rect x="3" y="6" width="18" height="14" rx="2" /><path d="M3 10h18" /></>,
   payments: <path d="M12 3v3M12 18v3M6 8a3 3 0 0 1 3-3h4a3 3 0 1 1 0 6H9a3 3 0 1 0 0 6h6a3 3 0 0 0 3-3" />,
+  products: <><path d="M3 9 12 4l9 5-9 5-9-5Z" /><path d="M3 9v6l9 5 9-5V9" /></>,
+  orders: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M3 11h18M9 3v4M15 3v4" /></>,
+  apply: <><circle cx="12" cy="12" r="9" /><path d="M12 8v4l3 3" /></>,
   messages: <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />,
   ai: <><path d="M12 3v3M12 18v3M5 5l2 2M17 17l2 2M3 12h3M18 12h3M5 19l2-2M17 7l2-2" /><circle cx="12" cy="12" r="3.2" /></>,
   settings: (
@@ -95,6 +98,15 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/settings", icon: icons.settings },
   ],
+  shop: [
+    { key: "dashboard", label: "Dashboard", href: "/dashboard/shop", icon: icons.dashboard },
+    { key: "products", label: "Produtos", href: "/dashboard/shop/products", icon: icons.products },
+    { key: "orders", label: "Encomendas", href: "/dashboard/shop/orders", icon: icons.orders },
+    { key: "payments", label: "Pagamentos", href: "/dashboard/shop/payments", icon: icons.payments },
+    { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
+    { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
+    { key: "settings", label: "Definições", href: "/settings", icon: icons.settings },
+  ],
   admin: [
     { key: "dashboard", label: "Dashboard", href: "/dashboard/admin", icon: icons.dashboard },
     { key: "clients", label: "Clientes", href: "/clients", icon: icons.clients },
@@ -105,12 +117,16 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "classes", label: "Aulas", href: "/dashboard/gym/classes", icon: icons.classes },
     { key: "subscriptions", label: "Subscrições", href: "/dashboard/gym/subscriptions", icon: icons.subscriptions },
     { key: "payments", label: "Pagamentos", href: "/dashboard/gym/payments", icon: icons.payments },
+    { key: "shop_products", label: "Produtos (Loja)", href: "/dashboard/shop/products", icon: icons.products },
+    { key: "shop_applications", label: "Candidaturas de Loja", href: "/dashboard/admin/shop-applications", icon: icons.apply },
     { key: "analytics", label: "Analítica", href: "/analytics", icon: icons.analytics },
     { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
     { key: "ai", label: "Assistente IA", href: "#", icon: icons.ai, action: "open-ai" },
     { key: "settings", label: "Definições", href: "/settings", icon: icons.settings },
   ],
 };
+
+const applyLinkRoles: Role[] = ["athlete", "trainer", "nutritionist", "gym"];
 
 function openAI(role: Role) {
   window.dispatchEvent(new CustomEvent("fitpro:open-ai", { detail: { role } }));
@@ -159,6 +175,14 @@ export default function Sidebar({ role, active }: { role: Role; active: string }
       </div>
 
       <div className="app-sidebar-bottom">
+        {applyLinkRoles.includes(role) && (
+          <Link href="/apply-shop" className={`sidebar-item ${active === "apply-shop" ? "active" : ""}`}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              {icons.apply}
+            </svg>
+            <span>Candidatar a Lojista</span>
+          </Link>
+        )}
         <Link href="#" className="sidebar-item" title="Ajuda" aria-label="Ajuda">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="9" />

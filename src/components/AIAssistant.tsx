@@ -11,10 +11,13 @@ const roleLabel: Record<Role, string> = {
   trainer: "Personal Trainer",
   nutritionist: "Nutricionista",
   gym: "Ginásio",
+  shop: "Lojista",
 };
 
 function toAIRole(role: string): Role {
-  return role === "athlete" || role === "trainer" || role === "nutritionist" || role === "gym" ? role : "trainer";
+  return role === "athlete" || role === "trainer" || role === "nutritionist" || role === "gym" || role === "shop"
+    ? role
+    : "trainer";
 }
 
 export default function AIAssistant() {
