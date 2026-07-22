@@ -11,6 +11,7 @@ import { getProfile, isFollowing, toggleFollow } from "@/lib/directory";
 import { bookableTrainers, bookableGyms, bookableNutritionists, availableClasses } from "@/lib/workoutsData";
 import { products, catIcon, catBg, stockLabel } from "@/lib/data";
 import { plansByRole, messagesPath } from "@/lib/accountData";
+import { nutritionistBusiness } from "@/lib/nutritionistBusiness";
 
 const roleLabel: Record<string, string> = {
   athlete: "Atleta",
@@ -27,7 +28,7 @@ function initials(name: string) {
 const tabsByRole: Record<string, string[]> = {
   athlete: ["Overview", "Treinos", "Conteúdo", "Progresso", "Conquistas"],
   trainer: ["Overview", "Serviços", "Agenda", "Preços", "Reviews", "Conteúdo"],
-  nutritionist: ["Overview", "Planos", "Agenda", "Preços", "Reviews", "Conteúdo"],
+  nutritionist: ["Overview", "Sobre", "Serviços", "Planos", "Receitas", "Resultados", "Agenda", "Reviews", "Contacto"],
   gym: ["Overview", "Galeria", "Serviços", "Treinadores", "Aulas", "Planos", "Reviews"],
   shop: ["Overview", "Produtos", "Categorias", "Reviews"],
 };
@@ -66,6 +67,7 @@ export default function ProfilePage() {
   const gymClasses = availableClasses.filter((c) => c.gym === profile.name);
   const gymPlans = plansByRole.gym;
   const shopProducts = profile.role === "shop" ? products.slice(0, 6) : [];
+  const business = nutritionistInfo ? nutritionistBusiness[nutritionistInfo.id] : undefined;
 
   function share() {
     navigator.clipboard?.writeText(window.location.href);
@@ -84,28 +86,61 @@ export default function ProfilePage() {
           </div>
           <div className="featured-body">
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <span className="avatar" style={{ width: 56, height: 56, fontSize: 18, marginTop: -48, border: "3px solid var(--surface)" }}>
-                {initials(profile.name)}
-              </span>
+              {nutritionistInfo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={nutritionistInfo.photo} alt={profile.name} style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", marginTop: -48, border: "3px solid var(--surface)" }} />
+              ) : (
+                <span className="avatar" style={{ width: 56, height: 56, fontSize: 18, marginTop: -48, border: "3px solid var(--surface)" }}>
+                  {initials(profile.name)}
+                </span>
+              )}
               <div>
                 <h3>{profile.name}</h3>
-                <div className="featured-meta"><span>📍 {profile.location}</span></div>
+                {nutritionistInfo ? (
+                  <div className="featured-meta">
+                    <span>{nutritionistInfo.specialty}</span>
+                    <span>📍 {profile.location}</span>
+                    <span className="rich-badge" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>{nutritionistInfo.sessionType}</span>
+                  </div>
+                ) : (
+                  <div className="featured-meta"><span>📍 {profile.location}</span></div>
+                )}
               </div>
             </div>
             <p style={{ fontSize: 13, color: "var(--text-dim)", lineHeight: 1.6, maxWidth: 560 }}>{profile.bio}</p>
             <div className="featured-meta">
-              <span><b className="tabular">{profile.followers}</b> seguidores</span>
-              <span><b className="tabular">{profile.following}</b> a seguir</span>
-              <span>⭐ {profile.rating.toFixed(1)} ({profile.reviews} avaliações)</span>
+              {nutritionistInfo && business ? (
+                <>
+                  <span>⭐ {profile.rating.toFixed(1)} ({profile.reviews} avaliações)</span>
+                  <span><b className="tabular">{business.clients}</b> clientes</span>
+                  <span><b className="tabular">{business.consultations}</b> consultas realizadas</span>
+                  <span><b className="tabular">{profile.followers}</b> seguidores</span>
+                </>
+              ) : (
+                <>
+                  <span><b className="tabular">{profile.followers}</b> seguidores</span>
+                  <span><b className="tabular">{profile.following}</b> a seguir</span>
+                  <span>⭐ {profile.rating.toFixed(1)} ({profile.reviews} avaliações)</span>
+                </>
+              )}
             </div>
             <div className="featured-actions">
-              <button
-                className={`btn ${following ? "btn-ghost" : "btn-primary"}`}
-                onClick={() => setFollowing(toggleFollow(profile.id))}
-              >
-                {following ? "A Seguir ✓" : "Seguir"}
-              </button>
+              {nutritionistInfo ? (
+                <Link href={`/dashboard/athlete/book/${nutritionistInfo.id}`} className="btn btn-primary">Marcar Consulta</Link>
+              ) : (
+                <button
+                  className={`btn ${following ? "btn-ghost" : "btn-primary"}`}
+                  onClick={() => setFollowing(toggleFollow(profile.id))}
+                >
+                  {following ? "A Seguir ✓" : "Seguir"}
+                </button>
+              )}
               <Link href={session ? messagesPath(session.role) : "/dashboard/athlete/messages"} className="btn btn-ghost">Mensagem</Link>
+              {nutritionistInfo && (
+                <button className={`btn ${following ? "btn-ghost" : "btn-ghost"}`} onClick={() => setFollowing(toggleFollow(profile.id))}>
+                  {following ? "A Seguir ✓" : "Seguir"}
+                </button>
+              )}
               {profile.whatsapp && (
                 <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
                   WhatsApp
@@ -121,6 +156,13 @@ export default function ProfilePage() {
             <button key={t} className={`subnav-btn ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>{t}</button>
           ))}
         </div>
+
+        {tab === "Overview" && profile.role === "nutritionist" && business && session?.role === "nutritionist" && (
+          <div className="ai-box" style={{ marginBottom: 20 }}>
+            <div className="ai-icon">🤖</div>
+            <p>O teu perfil está 85% completo. Adiciona mais fotos da galeria para aumentar as marcações em até 20%. O preço da tua consulta inicial está competitivo face à média do mercado.</p>
+          </div>
+        )}
 
         {tab === "Overview" && (
           <div className="dash-row">
@@ -193,12 +235,146 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {tab === "Planos" && profile.role === "nutritionist" && (
-          <div className="dash-panel">
-            <div className="dash-panel-head"><h2>Planos Alimentares</h2></div>
-            <div className="dash-panel-body" style={{ padding: "16px 20px" }}>
-              <p style={{ fontSize: 12.5, color: "var(--text-dim)" }}>Planos personalizados de acordo com o teu objetivo — consulta necessária para receberes o plano completo.</p>
+        {tab === "Sobre" && profile.role === "nutritionist" && business && (
+          <div className="dash-row">
+            <div className="dash-panel">
+              <div className="dash-panel-head"><h2>Filosofia & Abordagem</h2></div>
+              <div className="dash-panel-body" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                <div>
+                  <p style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Filosofia</p>
+                  <p style={{ fontSize: 13, color: "var(--text-dim)", lineHeight: 1.6 }}>&ldquo;{business.philosophy}&rdquo;</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Abordagem</p>
+                  <p style={{ fontSize: 13, color: "var(--text-dim)", lineHeight: 1.6 }}>{business.approach}</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Idiomas</p>
+                  <p style={{ fontSize: 13, color: "var(--text-dim)" }}>{business.languages.join(" · ")}</p>
+                </div>
+              </div>
             </div>
+            <div className="dash-panel">
+              <div className="dash-panel-head"><h2>Formação & Certificação</h2></div>
+              <div className="dash-panel-body" style={{ padding: "16px 20px" }}>
+                <p style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Educação</p>
+                {business.education.map((e) => <p key={e} style={{ fontSize: 12.5, color: "var(--text-dim)", marginBottom: 6 }}>🎓 {e}</p>)}
+                <p style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", margin: "14px 0 6px" }}>Nº de Cédula Profissional</p>
+                <p style={{ fontSize: 12.5, color: "var(--text-dim)" }} className="tabular">{business.licenseNumber}</p>
+                {(profile.specialties || []).length > 0 && (
+                  <>
+                    <p style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", margin: "14px 0 8px" }}>Especialidades</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {(profile.specialties || []).map((s) => <span key={s} className="pill" style={{ cursor: "default" }}>{s}</span>)}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "Serviços" && profile.role === "nutritionist" && business && (
+          <div className="rich-grid">
+            {business.services.map((s) => (
+              <div className="rich-card" key={s.id}>
+                <div className="rich-body">
+                  <div className="rich-title">{s.icon} {s.name}</div>
+                  <p className="rich-desc">{s.description}</p>
+                  <div className="rich-meta-row">
+                    <span>⏱ {s.durationMin} min</span>
+                    <span>{s.mode}</span>
+                  </div>
+                  <div className="rich-actions">
+                    <span className="product-price tabular" style={{ flex: 1 }}>{s.price}</span>
+                    <Link href={`/dashboard/athlete/book/${nutritionistInfo?.id}`} className="btn btn-primary btn-sm">Marcar</Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Planos" && profile.role === "nutritionist" && business && (
+          <div className="rich-grid">
+            {business.plans.map((p) => (
+              <div className="rich-card" key={p.id}>
+                <div className="rich-cover" style={{ background: `url(${p.image}) center/cover no-repeat` }} />
+                <div className="rich-body">
+                  <div className="rich-title">{p.name}</div>
+                  <p className="rich-desc">{p.description}</p>
+                  <div className="rich-meta-row"><span>⏱ {p.duration}</span></div>
+                  <div className="rich-actions">
+                    <span className="product-price tabular" style={{ flex: 1 }}>{p.price}</span>
+                    <Link href={`/dashboard/athlete/book/${nutritionistInfo?.id}`} className="btn btn-primary btn-sm">Pedir Consulta</Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Receitas" && profile.role === "nutritionist" && business && (
+          <div className="rich-grid">
+            {business.recipes.map((r) => (
+              <div className="rich-card" key={r.id}>
+                <div className="rich-cover" style={{ background: `url(${r.image}) center/cover no-repeat` }} />
+                <div className="rich-body">
+                  <div className="rich-title">{r.name}</div>
+                  <div className="rich-meta-row">
+                    <span>🔥 {r.calories} kcal</span>
+                    <span>🥩 {r.protein}g proteína</span>
+                  </div>
+                  <p className="rich-desc">{r.benefit}</p>
+                </div>
+              </div>
+            ))}
+            {business.posts.length > 0 && (
+              <>
+                {business.posts.map((post) => (
+                  <div className="dash-panel" key={post.id} style={{ padding: 16 }}>
+                    <p style={{ fontSize: 11, color: "var(--text-faint)", marginBottom: 4 }}>{post.date}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{post.title}</p>
+                    <p style={{ fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.5 }}>{post.excerpt}</p>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
+        {tab === "Resultados" && profile.role === "nutritionist" && business && (
+          <div className="dash-panel">
+            <div className="dash-panel-head"><h2>Resultados & Testemunhos</h2></div>
+            <div className="dash-panel-body" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+              {business.results.map((r) => (
+                <div key={r.id} style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={r.before} alt="antes" style={{ width: 90, height: 90, borderRadius: "var(--radius-md)", objectFit: "cover" }} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={r.after} alt="depois" style={{ width: 90, height: 90, borderRadius: "var(--radius-md)", objectFit: "cover" }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700 }}>{r.client}</p>
+                    <p style={{ fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.5 }}>&ldquo;{r.text}&rdquo;</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "Contacto" && profile.role === "nutritionist" && business && (
+          <div className="dash-panel" style={{ padding: 20, maxWidth: 420 }}>
+            <p style={{ fontSize: 12.5, color: "var(--text-dim)", marginBottom: 8 }}>📍 {profile.location}</p>
+            <p style={{ fontSize: 12.5, color: "var(--text-dim)", marginBottom: 8 }}>📧 {business.email}</p>
+            <p style={{ fontSize: 12.5, color: "var(--text-dim)", marginBottom: 14 }}>📞 {business.phone}</p>
+            {profile.whatsapp && (
+              <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                Abrir WhatsApp
+              </a>
+            )}
           </div>
         )}
 
@@ -256,11 +432,14 @@ export default function ProfilePage() {
           <div className="dash-panel">
             <div className="dash-panel-head"><h2>Disponibilidade</h2></div>
             <div className="dash-panel-body" style={{ padding: "16px 20px" }}>
-              <div className="slot-row">
+              <div className="slot-row" style={{ marginBottom: nutritionistInfo ? 16 : 0 }}>
                 {(trainerInfo?.availability || nutritionistInfo?.availability || []).map((a) => (
                   <span key={a} className="slot-btn">{a}</span>
                 ))}
               </div>
+              {nutritionistInfo && (
+                <Link href={`/dashboard/athlete/book/${nutritionistInfo.id}`} className="btn btn-primary">Marcar Consulta Agora</Link>
+              )}
             </div>
           </div>
         )}
