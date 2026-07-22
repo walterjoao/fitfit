@@ -1,26 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { useRoleGuard } from "@/lib/session";
 import { assignedWorkouts } from "@/lib/workoutsData";
-import { trainees, getClasses, saveClasses, type ClassItem } from "@/lib/trainerBusinessData";
+import { notifyAndEmail } from "@/lib/notifications";
+import { trainees, getClasses, saveClasses, getAssignments, addAssignment, type ClassItem, type Assignment } from "@/lib/trainerBusinessData";
 
 type Tab = "workouts" | "classes" | "assign";
 
 export default function ProgramsPage() {
   const { ready } = useRoleGuard("trainer");
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>("workouts");
   const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedTrainees, setSelectedTrainees] = useState<string[]>([]);
   const [selectedWorkout, setSelectedWorkout] = useState(assignedWorkouts[0]?.id || "");
   const [duration, setDuration] = useState(4);
   const [notes, setNotes] = useState("");
   const [assigned, setAssigned] = useState(false);
+  const [filterTrainee, setFilterTrainee] = useState("all");
 
   useEffect(() => {
     setClasses(getClasses());
+    setAssignments(getAssignments());
+    const preselect = searchParams.get("athlete");
+    if (preselect) {
+      setTab("assign");
+      setSelectedTrainees([preselect]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!ready) return null;
@@ -32,11 +44,23 @@ export default function ProgramsPage() {
   }
 
   function assign() {
+    const workout = myWorkouts.find((w) => w.id === selectedWorkout);
+    if (!workout) return;
+    let next = assignments;
+    selectedTrainees.forEach((id) => {
+      const trainee = trainees.find((t) => t.id === id);
+      if (!trainee) return;
+      next = addAssignment({ traineeId: id, traineeName: trainee.name, kind: "workout", label: `${workout.name} (${duration} sem.)${notes ? " — " + notes : ""}` });
+      notifyAndEmail(trainee.name, "A tua PT atribuiu-te um novo treino.", "good", "training", `/dashboard/athlete/workouts/${workout.id}`);
+    });
+    setAssignments(next);
     setAssigned(true);
     setSelectedTrainees([]);
     setNotes("");
     setTimeout(() => setAssigned(false), 2500);
   }
+
+  const visibleAssignments = assignments.filter((a) => filterTrainee === "all" || a.traineeId === filterTrainee);
 
   function cancelClass(id: string) {
     const next = classes.filter((c) => c.id !== id);
@@ -130,10 +154,34 @@ export default function ProgramsPage() {
             <p className="field-label" style={{ marginBottom: 10 }}>4. Notas (opcional)</p>
             <input className="field-input" style={{ marginBottom: 18 }} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex: foco em progressão de carga" />
 
-            {assigned && <p style={{ color: "var(--good)", fontSize: 12.5, marginBottom: 10 }}>✓ Programa atribuído com sucesso.</p>}
+            {assigned && <p style={{ color: "var(--good)", fontSize: 12.5, marginBottom: 10 }}>✓ Programa atribuído com sucesso. O atleta foi notificado.</p>}
             <button className="auth-submit" style={{ maxWidth: 240 }} disabled={selectedTrainees.length === 0} onClick={assign}>
               Atribuir a {selectedTrainees.length || ""} Cliente{selectedTrainees.length === 1 ? "" : "s"}
             </button>
+          </div>
+        )}
+
+        {tab === "assign" && (
+          <div style={{ maxWidth: 640, marginTop: 24 }}>
+            <div className="section-head"><h2>Atribuições</h2></div>
+            <select className="field-input" style={{ maxWidth: 220, marginBottom: 14 }} value={filterTrainee} onChange={(e) => setFilterTrainee(e.target.value)}>
+              <option value="all">Todos os clientes</option>
+              {trainees.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+            <div className="dash-panel">
+              <div className="dash-panel-body">
+                {visibleAssignments.length === 0 && <p style={{ padding: 20, fontSize: 12.5, color: "var(--text-faint)" }}>Ainda sem atribuições.</p>}
+                {visibleAssignments.map((a) => (
+                  <div className="schedule-item" key={a.id}>
+                    <span className="schedule-dot" style={{ background: a.status === "active" ? "var(--good)" : "var(--text-faint)" }} />
+                    <div className="schedule-body">
+                      <p>{a.traineeName} · {a.label}</p>
+                      <span>{a.date} · {a.status === "active" ? "Ativo" : "Concluído"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

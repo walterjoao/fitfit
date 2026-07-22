@@ -113,6 +113,29 @@ export function saveClasses(v: ClassItem[]) {
   write(CLASSES_KEY, v);
 }
 
+export type Assignment = { id: string; traineeId: string; traineeName: string; kind: "workout" | "class" | "note"; label: string; date: string; status: "active" | "completed" };
+const ASSIGNMENTS_KEY = "fitpro_trainer_assignments";
+export function getAssignments(): Assignment[] {
+  return read<Assignment[]>(ASSIGNMENTS_KEY, []);
+}
+export function addAssignment(a: Omit<Assignment, "id" | "date" | "status">) {
+  const next = [{ ...a, id: Math.random().toString(36).slice(2), date: new Date().toISOString().slice(0, 10), status: "active" as const }, ...getAssignments()];
+  write(ASSIGNMENTS_KEY, next);
+  return next;
+}
+
+export const aiTrainerInsights = [
+  "3 atletas não completaram o treino esta semana: Marta Neto, Nelson Sami e Beatriz Chiapa.",
+  "Tiago Kiala aumentou o supino reto em 15% no último mês.",
+  "A tua taxa de retenção subiu 4 pontos — continua com o acompanhamento semanal.",
+];
+
+export const contentPerformance = {
+  topWorkout: { name: "Upper Body Strength", id: "muscle-growth", completions: 128 },
+  topExercise: { name: "Agachamento Livre", completions: 342 },
+  topClass: { name: "Treino Funcional em Grupo", enrolled: 16 },
+};
+
 export type PrivateNote = { id: string; traineeId: string; text: string; date: string };
 const NOTES_KEY = "fitpro_trainer_notes";
 export function getNotes(traineeId: string): PrivateNote[] {

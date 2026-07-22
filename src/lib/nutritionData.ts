@@ -120,6 +120,30 @@ export const weightHistory = [
 
 export const planAdherence = 85;
 
+export type NutritionAssignment = { id: string; clientName: string; planName: string; date: string; status: "active" | "completed" };
+const NUTRI_ASSIGN_KEY = "fitpro_nutritionist_assignments";
+function readList<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function writeList<T>(key: string, value: T) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+export function getNutritionAssignments(): NutritionAssignment[] {
+  return readList(NUTRI_ASSIGN_KEY, []);
+}
+export function addNutritionAssignment(clientName: string, planName: string) {
+  const next: NutritionAssignment[] = [{ id: Math.random().toString(36).slice(2), clientName, planName, date: new Date().toISOString().slice(0, 10), status: "active" }, ...getNutritionAssignments()];
+  writeList(NUTRI_ASSIGN_KEY, next);
+  return next;
+}
+
 export const aiNutritionInsights = [
   "Hoje faltam 40g de proteína para atingires a tua meta diária.",
   "Baseado no teu treino de amanhã (Força · Superior), recomenda-se aumentar os carboidratos no jantar de hoje.",

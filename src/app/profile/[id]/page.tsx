@@ -21,6 +21,7 @@ import {
 } from "@/lib/athleteProfileData";
 import { myClasses } from "@/lib/workoutsData";
 import { shopProducts, isWishlisted } from "@/lib/data";
+import { getNotes, addNote, trainees, type PrivateNote } from "@/lib/trainerBusinessData";
 
 const roleLabel: Record<string, string> = {
   athlete: "Atleta",
@@ -56,14 +57,22 @@ export default function ProfilePage() {
   const [feed, setFeed] = useState<FeedPost[]>([]);
   const [newPost, setNewPost] = useState("");
   const [badgeList, setBadgeList] = useState(allBadgesWithVisibility());
+  const [showAssignMenu, setShowAssignMenu] = useState(false);
+  const [notes, setNotes] = useState<PrivateNote[]>([]);
+  const [newNote, setNewNote] = useState("");
 
   useEffect(() => {
-    if (profile) setFollowing(isFollowing(profile.id));
+    if (profile) {
+      setFollowing(isFollowing(profile.id));
+      setNotes(getNotes(profile.id));
+    }
     setPrs(getPRs());
     setFeed(getFeed());
   }, [profile]);
 
   const isOwner = !!session && !!profile && profile.role === "athlete" && session.name === profile.name;
+  const isTrainerViewer = !!session && !!profile && session.role === "trainer" && profile.role === "athlete";
+  const isNutritionistViewer = !!session && !!profile && session.role === "nutritionist" && profile.role === "athlete";
 
   if (session === undefined) return null;
   if (!session) {
@@ -80,7 +89,8 @@ export default function ProfilePage() {
     );
   }
 
-  const tabs = tabsByRole[profile.role] || tabsByRole.athlete;
+  const tabs = [...(tabsByRole[profile.role] || tabsByRole.athlete)];
+  if (isTrainerViewer) tabs.push("Notas (PT)");
   const trainerInfo = bookableTrainers.find((t) => t.name === profile.name);
   const nutritionistInfo = bookableNutritionists.find((n) => n.name === profile.name);
   const gymInfo = bookableGyms.find((g) => g.name === profile.name);
@@ -192,6 +202,24 @@ export default function ProfilePage() {
                 >
                   {following ? "A Seguir ✓" : "Seguir"}
                 </button>
+              )}
+              {(isTrainerViewer || isNutritionistViewer) && (
+                <div style={{ position: "relative" }}>
+                  <button className="btn btn-primary" onClick={() => setShowAssignMenu((v) => !v)}>Atribuir ▾</button>
+                  {showAssignMenu && (
+                    <div className="dash-panel" style={{ position: "absolute", top: "110%", left: 0, zIndex: 10, padding: 8, minWidth: 200 }}>
+                      {isTrainerViewer && (
+                        <>
+                          <Link href={`/programs?athlete=${trainees.find((t) => t.profileId === profile.id)?.id || ""}`} className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>🏋️ Atribuir Treino</Link>
+                          <button className="settings-nav-item" onClick={() => { setTab("Notas (PT)"); setShowAssignMenu(false); }}>📝 Adicionar Nota</button>
+                        </>
+                      )}
+                      {isNutritionistViewer && (
+                        <Link href="/dashboard/nutritionist/meal-plans" className="settings-nav-item" onClick={() => setShowAssignMenu(false)}>🥗 Atribuir Plano Alimentar</Link>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
               <Link href={session ? messagesPath(session.role) : "/dashboard/athlete/messages"} className="btn btn-ghost">Mensagem</Link>
               {nutritionistInfo && (
@@ -723,6 +751,34 @@ export default function ProfilePage() {
             {[...new Set(shopRoleProducts.map((p) => p.c))].map((c) => (
               <span key={c} className="pill" style={{ cursor: "default" }}>{catIcon[c]} {c.replace(/_/g, " ")}</span>
             ))}
+          </div>
+        )}
+
+        {tab === "Notas (PT)" && isTrainerViewer && (
+          <div style={{ maxWidth: 560 }}>
+            <div className="ai-box" style={{ marginBottom: 16 }}>
+              <div className="ai-icon">🔒</div>
+              <p>Estas notas são privadas — só tu, como PT, as podes ver.</p>
+            </div>
+            <div className="dash-panel" style={{ padding: 16, marginBottom: 16 }}>
+              <label className="field" style={{ marginBottom: 10 }}>
+                <span className="field-label">Nova nota</span>
+                <input className="field-input" value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Ex: melhorar mobilidade da anca antes de aumentar carga" />
+              </label>
+              <button className="btn btn-primary btn-sm" disabled={!newNote.trim()} onClick={() => { setNotes(addNote(profile.id, newNote.trim())); setNewNote(""); }}>Guardar Nota</button>
+            </div>
+            <div className="dash-panel">
+              <div className="dash-panel-head"><h2>Histórico de Notas</h2><span>{notes.length}</span></div>
+              <div className="dash-panel-body">
+                {notes.length === 0 && <p style={{ padding: 20, fontSize: 12.5, color: "var(--text-faint)" }}>Ainda sem notas para este atleta.</p>}
+                {notes.map((n) => (
+                  <div className="schedule-item" key={n.id}>
+                    <span className="schedule-dot" />
+                    <div className="schedule-body"><p>{n.text}</p><span>{n.date}</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
