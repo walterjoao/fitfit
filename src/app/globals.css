@@ -712,4 +712,50 @@ body:has(.auth-page){padding-left:0;}
 @media (max-width:1100px){
   .rich-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));}
 }
+
+/* ---------- Progress module ---------- */
+.progress-stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow-sm);}
+.progress-stat-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.progress-stat-value{font-family:var(--font-mono);font-size:22px;font-weight:700;margin-top:8px;}
+.progress-stat-delta{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;margin-top:6px;font-family:var(--font-mono);}
+.progress-stat-delta.good{color:var(--good);}
+.progress-stat-delta.bad{color:var(--bad);}
+.mini-spark{margin-top:10px;height:28px;}
+.mini-spark svg{width:100%;height:100%;}
+.mini-spark path{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+.level-card{display:flex;align-items:center;gap:16px;background:linear-gradient(155deg,var(--ink),color-mix(in srgb, var(--ink) 80%, var(--accent-strong)));border-radius:var(--radius-lg);padding:20px 22px;color:#fff;margin-bottom:20px;}
+.level-badge{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex:none;}
+.level-info{flex:1;}
+.level-title{font-size:15px;font-weight:700;}
+.level-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px;}
+.level-progress-track{height:6px;border-radius:var(--radius-full);background:rgba(255,255,255,.16);overflow:hidden;margin-top:8px;}
+.level-progress-fill{height:100%;background:var(--accent-strong);border-radius:var(--radius-full);}
+.level-points{font-family:var(--font-mono);font-size:20px;font-weight:700;text-align:right;flex:none;}
+
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+.badge-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px;text-align:center;box-shadow:var(--shadow-sm);transition:transform .15s ease;}
+.badge-card:hover{transform:translateY(-2px);}
+.badge-card-icon{font-size:32px;margin-bottom:8px;}
+.badge-card-label{font-size:12.5px;font-weight:700;}
+.badge-card-date{font-size:11px;color:var(--text-faint);margin-top:3px;}
+
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.photo-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);}
+.photo-card img{width:100%;height:220px;object-fit:cover;display:block;}
+.photo-card-body{padding:10px 12px;display:flex;justify-content:space-between;align-items:center;}
+.photo-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.photo-compare-slot{background:var(--surface-2);border:1.5px dashed var(--line-strong);border-radius:var(--radius-lg);min-height:280px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+.photo-compare-slot img{width:100%;height:100%;object-fit:cover;}
+.photo-compare-label{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-full);}
+
+.filter-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+
+.pr-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm);}
+.pr-card-title{font-size:13.5px;font-weight:700;margin-bottom:8px;}
+.pr-card-values{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:18px;font-weight:700;}
+.pr-card-values .before{color:var(--text-faint);font-size:14px;}
+.pr-card-values .arrow{color:var(--text-faint);font-size:14px;}
+.pr-card-values .after{color:var(--accent-strong);}
+.pr-card-gain{font-size:11.5px;color:var(--good);font-weight:700;margin-top:6px;}
 .affiliate-link-box input{flex:1;border:0;background:transparent;font-size:12.5px;color:var(--text-dim);outline:none;font-family:var(--font-mono);}
