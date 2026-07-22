@@ -8,9 +8,40 @@ export type Exercise = {
   reps: number;
   restSeconds: number;
   instructions: string;
+  muscles: string[];
+  gifUrl?: string;
   mediaUrl?: string;
   mediaType?: "image" | "gif" | "video";
 };
+
+export type MuscleTarget = { muscle: string; pct: number };
+
+// Deterministic per-exercise history stored locally (no real backend for performance logs).
+export function historyKey(exerciseId: string) {
+  return `fitpro_exercise_history_${exerciseId}`;
+}
+
+export type ExerciseLog = { date: string; weightKg: number };
+
+export function getExerciseHistory(exerciseId: string): ExerciseLog[] {
+  try {
+    const raw = localStorage.getItem(historyKey(exerciseId));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function logExercisePerformance(exerciseId: string, weightKg: number) {
+  try {
+    const list = getExerciseHistory(exerciseId);
+    const next = [...list, { date: new Date().toISOString(), weightKg }].slice(-20);
+    localStorage.setItem(historyKey(exerciseId), JSON.stringify(next));
+    return next;
+  } catch {
+    return [];
+  }
+}
 
 export type Difficulty = "Iniciante" | "Intermédio" | "Avançado";
 
@@ -28,10 +59,17 @@ export type AssignedWorkout = {
   name: string;
   type: string;
   createdBy: string;
+  trainerId?: string;
   days: string[];
   durationMin: number;
   difficulty: Difficulty;
   description: string;
+  objective: string;
+  audience: string;
+  results: string;
+  benefits: string[];
+  caloriesEstimate: number;
+  muscleTargets: MuscleTarget[];
   cover: string;
   progress: number;
   exercises: Exercise[];
@@ -42,20 +80,32 @@ export const weekDays = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Se
 export const assignedWorkouts: AssignedWorkout[] = [
   {
     id: "muscle-growth",
-    name: "Muscle Growth Program",
+    name: "Upper Body Strength",
     type: "Força · Superior",
     createdBy: "Ana Ferreira",
+    trainerId: "ana-ferreira",
     days: ["Segunda", "Quarta", "Sexta"],
     durationMin: 45,
     difficulty: "Intermédio",
-    description: "Foco em peito, ombros e braços com progressão de carga semanal.",
+    description: "Este treino foi criado para desenvolver força na parte superior do corpo, aumentando a massa muscular e melhorando a resistência.",
+    objective: "Desenvolver força e volume muscular no peito, ombros, costas e braços.",
+    audience: "Atletas em nível intermédio que já dominam a técnica base dos grandes movimentos compostos.",
+    results: "Aumento de força visível em 4-6 semanas, com progressão de carga controlada por sessão.",
+    benefits: ["💪 Aumento de força", "🔥 Melhor definição muscular", "⚡ Mais resistência", "🏋️ Melhor performance"],
+    caloriesEstimate: 380,
+    muscleTargets: [
+      { muscle: "Peito", pct: 80 },
+      { muscle: "Ombros", pct: 60 },
+      { muscle: "Tríceps", pct: 50 },
+      { muscle: "Costas", pct: 40 },
+    ],
     cover: bgImage(unsplashImages.strength[0]),
     progress: 62,
     exercises: [
-      { id: "e1", name: "Supino Reto", weightKg: 60, sets: 4, reps: 10, restSeconds: 90, instructions: "Desce a barra controlada até ao peito, empurra de forma explosiva." },
-      { id: "e2", name: "Remada Curvada", weightKg: 50, sets: 4, reps: 10, restSeconds: 90, instructions: "Mantém as costas retas, puxa a barra até ao abdómen." },
-      { id: "e3", name: "Agachamento Livre", weightKg: 70, sets: 4, reps: 8, restSeconds: 120, instructions: "Desce até 90°, joelhos alinhados com os pés." },
-      { id: "e4", name: "Desenvolvimento Militar", weightKg: 30, sets: 3, reps: 12, restSeconds: 60, instructions: "Empurra a barra acima da cabeça sem arquear as costas." },
+      { id: "e1", name: "Supino Reto", weightKg: 60, sets: 4, reps: 10, restSeconds: 90, instructions: "Mantém as costas apoiadas, desce a barra controlada até ao peito e empurra de forma explosiva e controlada.", muscles: ["Peito", "Ombros", "Tríceps"], gifUrl: "https://media2.giphy.com/media/v1.Y2lkPThiMjViN2I0aXB0bHhlczk5YWIxaG9neW9lMzVkaXN5MTJobjk0bnYyNG9yeWowMiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/7jTs1C1JiDchQmoRMr/giphy.gif" },
+      { id: "e2", name: "Remada Curvada", weightKg: 50, sets: 4, reps: 10, restSeconds: 90, instructions: "Mantém as costas retas, puxa a barra até ao abdómen sem balançar o tronco.", muscles: ["Costas", "Bíceps"], gifUrl: "https://media2.giphy.com/media/v1.Y2lkPThiMjViN2I0ejdiYTRlMHRqcm9lZzEweXppaml5aGkzdTBzZzVrNjY0dHZxNmUwNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kt2eEd8IYvV4CMopmK/giphy.gif" },
+      { id: "e3", name: "Agachamento Livre", weightKg: 70, sets: 4, reps: 8, restSeconds: 120, instructions: "Desce até 90°, joelhos alinhados com os pés, mantém o peito erguido.", muscles: ["Quadríceps", "Glúteos", "Isquiotibiais"], gifUrl: "https://media2.giphy.com/media/v1.Y2lkPThiMjViN2I0YWp0YWs2YmsyaWlvYjJ5Nmp4MW9hbzkwZjFkOWxqZjBwcW4xZTVmMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Jlgar7LD1TLWIsHQW7/giphy.gif" },
+      { id: "e4", name: "Desenvolvimento Militar", weightKg: 30, sets: 3, reps: 12, restSeconds: 60, instructions: "Empurra a barra acima da cabeça sem arquear as costas, controla a descida.", muscles: ["Ombros", "Tríceps"], gifUrl: "https://media4.giphy.com/media/v1.Y2lkPThiMjViN2I0NXo1cGJhbHRrYjF6NHZuaW5ibXRhMXFiZG4wdHVvNXFsaWthNW16aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1qrNKzsgcZtGMkI4pn/giphy.gif" },
     ],
   },
   {
@@ -63,15 +113,26 @@ export const assignedWorkouts: AssignedWorkout[] = [
     name: "Condicionamento Físico",
     type: "Cardio · Intervalado",
     createdBy: "Ana Ferreira",
+    trainerId: "ana-ferreira",
     days: ["Terça", "Quinta"],
     durationMin: 30,
     difficulty: "Avançado",
-    description: "Treino intervalado de alta intensidade para melhorar a resistência.",
+    description: "Treino intervalado de alta intensidade para melhorar a resistência cardiovascular e acelerar o metabolismo.",
+    objective: "Melhorar a capacidade cardiovascular e a queima calórica através de intervalos de alta intensidade.",
+    audience: "Atletas avançados com boa base cardiovascular à procura de mais intensidade.",
+    results: "Melhoria da resistência e recuperação entre esforços em 3-4 semanas.",
+    benefits: ["🔥 Alta queima calórica", "❤️ Melhor capacidade cardiovascular", "⚡ Mais explosão", "🏃 Melhor recuperação"],
+    caloriesEstimate: 420,
+    muscleTargets: [
+      { muscle: "Cardio", pct: 90 },
+      { muscle: "Pernas", pct: 60 },
+      { muscle: "Core", pct: 40 },
+    ],
     cover: bgImage(unsplashImages.functional[0]),
     progress: 30,
     exercises: [
-      { id: "e5", name: "Corrida Intervalada", weightKg: 0, sets: 6, reps: 1, restSeconds: 60, instructions: "1 min a ritmo forte, 1 min recuperação." },
-      { id: "e6", name: "Burpees", weightKg: 0, sets: 4, reps: 15, restSeconds: 45, instructions: "Movimento explosivo, mantém o ritmo constante." },
+      { id: "e5", name: "Corrida Intervalada", weightKg: 0, sets: 6, reps: 1, restSeconds: 60, instructions: "1 minuto a ritmo forte, 1 minuto de recuperação ativa.", muscles: ["Cardio", "Pernas"], gifUrl: "https://media0.giphy.com/media/v1.Y2lkPThiMjViN2I0eWJoaTBvaHdhYnM4NTZyc3pyMTF0ZWNudXJ3bGU3NXR1OTd4dnQ0byZlcD12MV9naWZzX3NlYXJjaCZjdD1n/OCrOhx5y2vZmpsylho/giphy.gif" },
+      { id: "e6", name: "Burpees", weightKg: 0, sets: 4, reps: 15, restSeconds: 45, instructions: "Movimento explosivo e completo, mantém o ritmo constante do início ao fim.", muscles: ["Corpo Inteiro"], gifUrl: "https://media1.giphy.com/media/v1.Y2lkPThiMjViN2I0bDR5eXh1bTYxOGxydHRjZ2k2enptZzEyazRjNGwxN3E0cmhjdGVuYiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/fqVQcdzMgwSXIvNaL4/giphy.gif" },
     ],
   },
 ];
@@ -88,6 +149,12 @@ export type PersonalWorkout = {
   durationMin: number;
   difficulty: Difficulty;
   description: string;
+  objective: string;
+  audience: string;
+  results: string;
+  benefits: string[];
+  caloriesEstimate: number;
+  muscleTargets: MuscleTarget[];
   cover: string;
   progress: number;
   exercises: Exercise[];
@@ -105,11 +172,20 @@ export const personalWorkouts: PersonalWorkout[] = [
     days: ["Segunda", "Quarta", "Sexta", "Domingo"],
     durationMin: 30,
     difficulty: "Iniciante",
-    description: "Corrida leve para acordar o corpo e manter a consistência.",
+    description: "Corrida leve para acordar o corpo, melhorar a resistência e manter a consistência diária.",
+    objective: "Criar o hábito de treino matinal e desenvolver uma base cardiovascular sólida.",
+    audience: "Atletas iniciantes que querem construir consistência antes de aumentar a intensidade.",
+    results: "Mais energia ao longo do dia e melhoria gradual do ritmo de corrida em 2-3 semanas.",
+    benefits: ["❤️ Melhor saúde cardiovascular", "⚡ Mais energia", "😌 Redução de stress", "📈 Consistência diária"],
+    caloriesEstimate: 260,
+    muscleTargets: [
+      { muscle: "Cardio", pct: 85 },
+      { muscle: "Pernas", pct: 50 },
+    ],
     cover: bgImage(unsplashImages.running[0]),
     progress: 45,
     exercises: [
-      { id: "p1", name: "Corrida", weightKg: 0, sets: 1, reps: 1, restSeconds: 0, instructions: "30 minutos a ritmo constante." },
+      { id: "p1", name: "Corrida", weightKg: 0, sets: 1, reps: 1, restSeconds: 0, instructions: "30 minutos a ritmo constante, respiração controlada.", muscles: ["Cardio", "Pernas"], gifUrl: "https://media0.giphy.com/media/v1.Y2lkPThiMjViN2I0eWJoaTBvaHdhYnM4NTZyc3pyMTF0ZWNudXJ3bGU3NXR1OTd4dnQ0byZlcD12MV9naWZzX3NlYXJjaCZjdD1n/OCrOhx5y2vZmpsylho/giphy.gif" },
     ],
   },
 ];
