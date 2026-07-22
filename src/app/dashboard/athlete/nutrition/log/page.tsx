@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import NutritionSubNav from "@/components/NutritionSubNav";
@@ -43,10 +44,11 @@ export default function LogMealPage() {
       <Header />
       <div className="shell">
         <div className="page-head" style={{ paddingTop: 22 }}>
-          <h1>Registar Refeição</h1>
+          <h1>Adicionar Refeição</h1>
           <p>Adiciona refeições próprias, água e snacks fora do plano.</p>
         </div>
 
+        <Link href="/dashboard/athlete/nutrition/meals" className="auth-back" style={{ marginBottom: 12, display: "inline-block" }}>← Voltar às Minhas Refeições</Link>
         <NutritionSubNav />
 
         <div className="dash-row">

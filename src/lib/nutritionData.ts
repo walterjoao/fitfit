@@ -125,3 +125,56 @@ export const aiNutritionInsights = [
   "Baseado no teu treino de amanhã (Força · Superior), recomenda-se aumentar os carboidratos no jantar de hoje.",
   "Bebeste apenas 1.2L de água hoje — tenta chegar aos 3L até ao final do dia.",
 ];
+
+export type MealPlan = {
+  id: string;
+  name: string;
+  goal: string;
+  duration: string;
+  createdBy: string;
+  createdByRole: "nutritionist" | "self";
+  progress: number;
+  cover: string;
+  days: WeeklyPlanDay[];
+};
+
+export const mealPlans: MealPlan[] = [
+  {
+    id: "plan-muscle-gain", name: "Plano Ganho de Massa Magra", goal: "Ganhar massa muscular", duration: "30 dias",
+    createdBy: "Inês Gonçalves", createdByRole: "nutritionist", progress: 62,
+    cover: bgImage(unsplashImages.meals[0]),
+    days: weeklyPlan,
+  },
+  {
+    id: "plan-performance", name: "Plano Performance", goal: "Melhorar rendimento desportivo", duration: "30 dias",
+    createdBy: "Inês Gonçalves", createdByRole: "nutritionist", progress: 40,
+    cover: bgImage(unsplashImages.meals[1]),
+    days: weeklyPlan,
+  },
+  {
+    id: "plan-my-cut", name: "O Meu Plano de Definição", goal: "Perder gordura mantendo massa", duration: "Contínuo",
+    createdBy: "Tiago Kiala", createdByRole: "self", progress: 25,
+    cover: bgImage(unsplashImages.meals[2]),
+    days: weeklyPlan,
+  },
+];
+
+export type SharedMeal = {
+  id: string;
+  creator: string;
+  creatorRole: "nutritionist" | "trainer" | "gym" | "athlete";
+  image: string;
+  description: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  date: string;
+};
+
+export const sharedMeals: SharedMeal[] = [
+  { id: "sh1", creator: "Inês Gonçalves", creatorRole: "nutritionist", image: unsplashImages.meals[0], description: "Bowl de frango, quinoa e vegetais grelhados — ótimo para dias de treino intenso.", calories: 480, protein: 42, carbs: 45, fat: 14, date: "Há 2 dias" },
+  { id: "sh2", creator: "Ana Ferreira", creatorRole: "trainer", image: unsplashImages.meals[1], description: "Omelete de claras com espinafres, ideal para o pequeno-almoço pré-treino.", calories: 260, protein: 30, carbs: 8, fat: 10, date: "Há 3 dias" },
+  { id: "sh3", creator: "Beatriz Chiapa", creatorRole: "athlete", image: unsplashImages.meals[2], description: "A minha salada de atum e grão pós-treino — simples e rica em proteína.", calories: 390, protein: 34, carbs: 30, fat: 12, date: "Há 5 dias" },
+  { id: "sh4", creator: "FitPro Talatona", creatorRole: "gym", image: unsplashImages.meals[3], description: "Smoothie de proteína recomendado para recuperação depois de aulas de CrossFit.", calories: 280, protein: 25, carbs: 30, fat: 6, date: "Há 1 semana" },
+];

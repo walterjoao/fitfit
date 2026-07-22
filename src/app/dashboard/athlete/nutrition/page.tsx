@@ -1,10 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import NutritionSubNav from "@/components/NutritionSubNav";
 import { useRoleGuard } from "@/lib/session";
 import { todayMeals, dailyTarget, todayTotals, mealTypeIcon, mealTypeLabel, aiNutritionInsights, planAdherence } from "@/lib/nutritionData";
+
+function Ring({ pct, color }: { pct: number; color: string }) {
+  const clamped = Math.min(Math.max(pct, 0), 100);
+  return (
+    <div className="nut-ring" style={{ background: `conic-gradient(${color} ${clamped * 3.6}deg, var(--surface-2) 0deg)` }}>
+      <div className="nut-ring-inner">
+        <span className="nut-ring-value tabular">{Math.round(clamped)}%</span>
+      </div>
+    </div>
+  );
+}
 
 export default function NutritionDashboardPage() {
   const { ready } = useRoleGuard("athlete");
@@ -14,11 +26,12 @@ export default function NutritionDashboardPage() {
   const remaining = Math.max(dailyTarget.calories - totals.calories, 0);
   const waterL = 2;
 
-  const macros = [
-    { label: "Proteína", value: totals.protein, target: dailyTarget.protein, unit: "g" },
-    { label: "Carboidratos", value: totals.carbs, target: dailyTarget.carbs, unit: "g" },
-    { label: "Gordura", value: totals.fat, target: dailyTarget.fat, unit: "g" },
-    { label: "Água", value: waterL, target: dailyTarget.waterL, unit: "L" },
+  const rings = [
+    { key: "calories", icon: "🔥", label: "Calorias", value: totals.calories, target: dailyTarget.calories, unit: "kcal", color: "var(--accent)" },
+    { key: "protein", icon: "🥩", label: "Proteína", value: totals.protein, target: dailyTarget.protein, unit: "g", color: "var(--good)" },
+    { key: "carbs", icon: "🌾", label: "Carboidratos", value: totals.carbs, target: dailyTarget.carbs, unit: "g", color: "var(--gold)" },
+    { key: "fat", icon: "🥑", label: "Gordura", value: totals.fat, target: dailyTarget.fat, unit: "g", color: "#A85AA8" },
+    { key: "water", icon: "💧", label: "Água", value: waterL, target: dailyTarget.waterL, unit: "L", color: "#3AA0D6" },
   ];
 
   return (
@@ -28,32 +41,28 @@ export default function NutritionDashboardPage() {
       <div className="shell">
         <div className="page-head" style={{ paddingTop: 22 }}>
           <h1>A Minha Nutrição</h1>
-          <p>O teu acompanhamento nutricional completo, ligado ao teu treino e ao teu nutricionista.</p>
+          <p>O teu ecossistema nutricional completo, ligado ao teu treino e ao teu nutricionista.</p>
         </div>
 
         <NutritionSubNav />
 
-        <div className="dash-panel" style={{ padding: 24, marginBottom: 24 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text-faint)", marginBottom: 6 }}>NUTRIÇÃO DE HOJE</p>
-          <p className="tabular" style={{ fontSize: 28, fontWeight: 700 }}>
-            🔥 {totals.calories.toLocaleString("pt-PT")} <span style={{ fontSize: 16, color: "var(--text-faint)", fontWeight: 600 }}>/ {dailyTarget.calories.toLocaleString("pt-PT")} kcal</span>
-          </p>
-          <div className="rich-progress" style={{ marginTop: 10, marginBottom: 4 }}>
-            <div className="rich-progress-fill" style={{ width: `${Math.min((totals.calories / dailyTarget.calories) * 100, 100)}%` }} />
-          </div>
-          <p style={{ fontSize: 12, color: "var(--text-faint)" }}>Faltam {remaining} kcal para atingires a tua meta diária.</p>
-        </div>
-
-        <div className="stat-grid">
-          {macros.map((m) => (
-            <div className="stat-card" key={m.label}>
-              <div className="stat-top"><span className="stat-label">{m.label}</span></div>
-              <div className="stat-value tabular">{m.value}{m.unit} / {m.target}{m.unit}</div>
-              <div className="rich-progress" style={{ marginTop: 8 }}>
-                <div className="rich-progress-fill" style={{ width: `${Math.min((m.value / m.target) * 100, 100)}%` }} />
-              </div>
+        <div className="section-head"><h2>Resumo Nutricional de Hoje</h2><span>atualizado agora</span></div>
+        <div className="nut-ring-grid" style={{ marginBottom: 24 }}>
+          {rings.map((r) => (
+            <div className="nut-ring-card" key={r.key}>
+              <Ring pct={(r.value / r.target) * 100} color={r.color} />
+              <span className="nut-ring-label">{r.icon} {r.label}</span>
+              <span className="nut-ring-target tabular">{r.value} / {r.target}{r.unit}</span>
             </div>
           ))}
+        </div>
+
+        <div className="dash-panel" style={{ padding: 20, marginBottom: 24 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text-faint)", marginBottom: 6 }}>FALTAM PARA A META DIÁRIA</p>
+          <p className="tabular" style={{ fontSize: 24, fontWeight: 700 }}>🔥 {remaining.toLocaleString("pt-PT")} kcal</p>
+          <div className="rich-progress" style={{ marginTop: 10 }}>
+            <div className="rich-progress-fill" style={{ width: `${Math.min((totals.calories / dailyTarget.calories) * 100, 100)}%` }} />
+          </div>
         </div>
 
         <div className="dash-row">
@@ -73,6 +82,9 @@ export default function NutritionDashboardPage() {
                   {m.consumed && <span className="badge on" style={{ marginLeft: "auto" }}>Consumida</span>}
                 </div>
               ))}
+            </div>
+            <div style={{ padding: "12px 20px" }}>
+              <Link href="/dashboard/athlete/nutrition/meals" className="btn btn-ghost btn-sm">Ver Todas as Refeições</Link>
             </div>
           </div>
 
