@@ -6,24 +6,81 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import WorkoutsSubNav from "@/components/WorkoutsSubNav";
 import { useRoleGuard } from "@/lib/session";
-import { assignedWorkouts, personalWorkouts, weekDays } from "@/lib/workoutsData";
+import { notifyAndEmail } from "@/lib/notifications";
+import { assignedWorkouts, personalWorkouts, weekDays, type AssignedWorkout, type PersonalWorkout } from "@/lib/workoutsData";
 
-const weekPlan: Record<string, string[]> = {
-  Segunda: ["Muscle Growth Program"],
-  Terça: ["Condicionamento Físico"],
-  Quarta: ["Muscle Growth Program"],
-  Quinta: ["Condicionamento Físico"],
-  Sexta: ["Muscle Growth Program", "Cardio Matinal"],
+const weekPlan: Record<string, { workout: AssignedWorkout | PersonalWorkout; trainer: string }[]> = {
+  Segunda: [{ workout: assignedWorkouts[0], trainer: "Ana Ferreira" }],
+  Terça: [{ workout: assignedWorkouts[1], trainer: "Ana Ferreira" }],
+  Quarta: [{ workout: assignedWorkouts[0], trainer: "Ana Ferreira" }],
+  Quinta: [{ workout: assignedWorkouts[1], trainer: "Ana Ferreira" }],
+  Sexta: [{ workout: assignedWorkouts[0], trainer: "Ana Ferreira" }, { workout: personalWorkouts[0], trainer: "Pessoal" }],
   Sábado: [],
-  Domingo: ["Cardio Matinal"],
+  Domingo: [{ workout: personalWorkouts[0], trainer: "Pessoal" }],
 };
 
+function DifficultyBadge({ level }: { level: string }) {
+  return <span className="rich-badge">{level}</span>;
+}
+
+function WorkoutCard({ w, createdBy, onDelete }: { w: AssignedWorkout | PersonalWorkout; createdBy: string; onDelete?: () => void }) {
+  return (
+    <div className="rich-card">
+      <div className="rich-cover" style={{ background: w.cover }}>
+        <div className="rich-badge-row">
+          <DifficultyBadge level={w.difficulty} />
+        </div>
+        <span className="rich-cover-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5 3 10l3.5 3.5M17.5 6.5 21 10l-3.5 3.5M14 4l-4 16" /></svg>
+        </span>
+      </div>
+      <div className="rich-body">
+        <div>
+          <div className="rich-title">{w.name}</div>
+          <div className="rich-meta-row" style={{ marginTop: 4 }}>
+            <span>Criado por {createdBy}</span>
+          </div>
+        </div>
+        <div className="rich-meta-row">
+          <span>⏱ {w.durationMin} min</span>
+          <span>💪 {w.exercises.length} exercícios</span>
+        </div>
+        <p className="rich-desc">&ldquo;{w.description}&rdquo;</p>
+        <div>
+          <div className="rich-meta-row" style={{ justifyContent: "space-between", marginBottom: 4 }}>
+            <span>Progresso</span>
+            <span className="tabular">{w.progress}%</span>
+          </div>
+          <div className="rich-progress"><div className="rich-progress-fill" style={{ width: `${w.progress}%` }} /></div>
+        </div>
+        <div className="rich-actions">
+          <Link href={`/dashboard/athlete/workouts/${w.id}`} className="btn btn-primary btn-sm">Começar Treino</Link>
+          <Link href={`/dashboard/athlete/workouts/${w.id}`} className="btn btn-ghost btn-sm">Ver Detalhes</Link>
+          {onDelete && (
+            <button className="icon-action" title="Remover" onClick={onDelete}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MyWorkoutsPage() {
-  const { ready } = useRoleGuard("athlete");
+  const { session, ready } = useRoleGuard("athlete");
   const [view, setView] = useState<"daily" | "weekly">("daily");
+  const [removed, setRemoved] = useState<string[]>([]);
   const today = "Segunda";
 
   if (!ready) return null;
+
+  const visiblePersonal = personalWorkouts.filter((w) => !removed.includes(w.id));
+
+  function removePersonal(w: PersonalWorkout) {
+    setRemoved((r) => [...r, w.id]);
+    notifyAndEmail("Sistema FitPro", `${session?.name || "O atleta"} removeu o treino pessoal "${w.name}".`, "bad");
+  }
 
   return (
     <>
@@ -48,54 +105,53 @@ export default function MyWorkoutsPage() {
               <h2>Treinos Atribuídos</h2>
               <span>por Personal Trainers</span>
             </div>
-            {assignedWorkouts.map((w) => (
-              <Link href={`/dashboard/athlete/workouts/${w.id}`} key={w.id} className="workout-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-                <div className="workout-card-head">
-                  <div>
-                    <div className="workout-card-title">{w.name}</div>
-                    <div className="workout-card-meta">Criado por {w.createdBy} · {w.exercises.length} exercícios</div>
-                  </div>
-                  <span className="badge on">Ativo</span>
-                </div>
-                <div className="workout-card-days">
-                  {weekDays.map((d) => (
-                    <span key={d} className={`day-chip ${w.days.includes(d) ? "on" : ""}`}>{d.slice(0, 3)}</span>
-                  ))}
-                </div>
-              </Link>
-            ))}
+            <div className="rich-grid" style={{ marginBottom: 30 }}>
+              {assignedWorkouts.map((w) => (
+                <WorkoutCard key={w.id} w={w} createdBy={w.createdBy} />
+              ))}
+            </div>
 
             <div className="section-head">
               <h2>Os Meus Treinos Pessoais</h2>
               <Link href="/dashboard/athlete/workouts/new" className="btn btn-primary btn-sm">+ Criar Treino</Link>
             </div>
-            {personalWorkouts.map((w) => (
-              <Link href={`/dashboard/athlete/workouts/${w.id}`} key={w.id} className="workout-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-                <div className="workout-card-head">
-                  <div>
-                    <div className="workout-card-title">{w.name}</div>
-                    <div className="workout-card-meta">Pessoal · {w.exercises.length} exercícios · até {new Date(w.endDate).toLocaleDateString("pt-PT")}</div>
-                  </div>
-                  <span className="badge paused">Pessoal</span>
-                </div>
-                <div className="workout-card-days">
-                  {weekDays.map((d) => (
-                    <span key={d} className={`day-chip ${w.days.includes(d) ? "on" : ""}`}>{d.slice(0, 3)}</span>
-                  ))}
-                </div>
-              </Link>
-            ))}
+            <div className="rich-grid">
+              {visiblePersonal.map((w) => (
+                <WorkoutCard key={w.id} w={w} createdBy="ti mesmo" onDelete={() => removePersonal(w)} />
+              ))}
+              {visiblePersonal.length === 0 && (
+                <p style={{ fontSize: 12.5, color: "var(--text-faint)" }}>Sem treinos pessoais. Cria um novo acima.</p>
+              )}
+            </div>
           </>
         ) : (
           <div className="week-grid">
-            {weekDays.map((d) => (
-              <div key={d} className="week-day" style={d === today ? { borderColor: "var(--accent)" } : undefined}>
-                <div className="week-day-label">{d.slice(0, 3)}</div>
-                {(weekPlan[d] || []).map((name) => (
-                  <div key={name} className="week-day-item">{name}</div>
-                ))}
-              </div>
-            ))}
+            {weekDays.map((d) => {
+              const items = weekPlan[d] || [];
+              return (
+                <div key={d} className="week-day-rich" style={d === today ? { borderColor: "var(--accent)" } : undefined}>
+                  <div className="week-day-rich-head">
+                    <span className="week-day-rich-label">{d.slice(0, 3)}</span>
+                    {d === today && <span className="badge on" style={{ fontSize: 9 }}>Hoje</span>}
+                  </div>
+                  <div className="week-day-rich-body">
+                    {items.length === 0 && <div className="week-day-empty">Descanso</div>}
+                    {items.map(({ workout, trainer }, i) => (
+                      <Link href={`/dashboard/athlete/workouts/${workout.id}`} key={workout.id + i} style={{ textDecoration: "none" }}>
+                        <div className="week-day-rich-cover" style={{ background: workout.cover }}>
+                          <span className="week-day-rich-name">{workout.name}</span>
+                        </div>
+                        <div className="week-day-rich-meta">
+                          <span>{workout.durationMin}min</span>
+                          <span>{workout.exercises.length} ex.</span>
+                          <span>{workout.progress}%</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

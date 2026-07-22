@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { useRoleGuard } from "@/lib/session";
+import { notifyAndEmail } from "@/lib/notifications";
 import { assignedWorkouts, personalWorkouts, type Exercise } from "@/lib/workoutsData";
 
 type ExerciseState = {
@@ -16,7 +17,7 @@ type ExerciseState = {
 };
 
 export default function WorkoutDetailPage() {
-  const { ready } = useRoleGuard("athlete");
+  const { session, ready } = useRoleGuard("athlete");
   const params = useParams<{ id: string }>();
 
   const workout = useMemo(
@@ -152,7 +153,21 @@ export default function WorkoutDetailPage() {
               {current < workout.exercises.length - 1 ? (
                 <button className="btn btn-primary" onClick={() => setCurrent((c) => c + 1)}>Próximo Exercício</button>
               ) : (
-                <button className="btn btn-primary" onClick={() => setFinished(true)}>Terminar Treino</button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setFinished(true);
+                    if ("createdBy" in workout) {
+                      notifyAndEmail(
+                        workout.createdBy,
+                        `${session?.name || "O atleta"} concluiu e adicionou notas ao treino "${workout.name}".`,
+                        "good"
+                      );
+                    }
+                  }}
+                >
+                  Terminar Treino
+                </button>
               )}
             </div>
           </div>

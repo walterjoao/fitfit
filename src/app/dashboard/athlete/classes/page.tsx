@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import WorkoutsSubNav from "@/components/WorkoutsSubNav";
 import { useRoleGuard } from "@/lib/session";
+import { notifyAndEmail } from "@/lib/notifications";
 import { availableClasses, myClasses } from "@/lib/workoutsData";
 
 export default function ClassesPage() {
-  const { ready } = useRoleGuard("athlete");
+  const { session, ready } = useRoleGuard("athlete");
   const [tab, setTab] = useState<"available" | "mine">("available");
   const [joined, setJoined] = useState<string[]>(myClasses.upcoming.map((c) => c.id));
+  const [cancelled, setCancelled] = useState<string[]>([]);
 
   if (!ready) return null;
 
@@ -20,6 +23,13 @@ export default function ClassesPage() {
     if (free <= 3) return "low";
     return "ok";
   }
+
+  function cancelClass(name: string, gym: string) {
+    setCancelled((c) => [...c, name]);
+    notifyAndEmail(gym, `${session?.name || "O atleta"} cancelou a participação na aula "${name}".`, "bad");
+  }
+
+  const upcomingVisible = myClasses.upcoming.filter((c) => !cancelled.includes(c.name));
 
   return (
     <>
@@ -39,31 +49,46 @@ export default function ClassesPage() {
         </div>
 
         {tab === "available" ? (
-          <div className="grid">
+          <div className="rich-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
             {availableClasses.map((c) => {
               const state = seatState(c.seats, c.seatsTaken);
               const isJoined = joined.includes(c.id);
               return (
-                <div className="class-card" key={c.id}>
-                  <div className="class-card-head"><h3>{c.name}</h3></div>
-                  <div className="class-card-body">
-                    <div className="class-meta">
-                      <span>{c.trainer} · {c.gym}</span>
-                      <span>{c.date} · {c.time}</span>
-                      <span><span className="stars">★</span> {c.rating.toFixed(1)}</span>
+                <Link href={`/dashboard/athlete/classes/${c.id}`} key={c.id} className="rich-card" style={{ textDecoration: "none", color: "inherit" }}>
+                  <div className="rich-cover" style={{ background: c.cover }}>
+                    <span className="rich-badge">{c.difficulty}</span>
+                    <span className="rich-cover-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3v18l15-9L5 3Z" /></svg>
+                    </span>
+                  </div>
+                  <div className="rich-body">
+                    <div className="rich-title">{c.name}</div>
+                    <div className="rich-meta-row">
+                      <span>{c.gym}</span>
                     </div>
-                    <div className="product-foot">
-                      <span className={`class-seats ${state}`}>{c.seats - c.seatsTaken} vagas</span>
+                    <div className="rich-meta-row">
+                      <span>⭐ {c.rating.toFixed(1)} ({c.reviews})</span>
+                      <span>⏱ {c.durationMin} min</span>
+                    </div>
+                    <div className="rich-meta-row" style={{ justifyContent: "space-between" }}>
+                      <span className={`class-seats ${state}`}>{c.seatsTaken}/{c.seats} atletas</span>
+                      <span className="product-price tabular">{c.price}</span>
+                    </div>
+                    <div className="rich-actions">
                       <button
+                        type="button"
                         className={`btn ${isJoined ? "btn-ghost" : "btn-primary"} btn-sm`}
                         disabled={state === "full" && !isJoined}
-                        onClick={() => setJoined((j) => (isJoined ? j.filter((x) => x !== c.id) : [...j, c.id]))}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setJoined((j) => (isJoined ? j.filter((x) => x !== c.id) : [...j, c.id]));
+                        }}
                       >
                         {isJoined ? "Inscrito ✓" : "Juntar-me"}
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -71,38 +96,64 @@ export default function ClassesPage() {
           <>
             <div className="section-head">
               <h2>Próximas Aulas</h2>
-              <span>{myClasses.upcoming.length}</span>
+              <span>{upcomingVisible.length}</span>
             </div>
-            <div className="dash-panel" style={{ marginBottom: 24 }}>
-              <div className="dash-panel-body">
-                {myClasses.upcoming.map((c) => (
-                  <div className="schedule-item" key={c.id}>
-                    <span className="schedule-dot" />
-                    <div className="schedule-body">
-                      <p>{c.name}</p>
-                      <span>{c.date} · {c.time} · {c.trainer} · {c.location}</span>
+            <div className="rich-grid" style={{ marginBottom: 30 }}>
+              {upcomingVisible.map((c) => {
+                const full = availableClasses.find((a) => a.name === c.name);
+                return (
+                  <div className="rich-card" key={c.id}>
+                    <div className="rich-cover" style={{ background: full?.cover || "var(--ink)" }}>
+                      <span className={`badge-status ${c.status}`}>{c.status}</span>
+                    </div>
+                    <div className="rich-body">
+                      <div className="rich-title">{c.name}</div>
+                      <div className="rich-meta-row">
+                        <span>{c.trainer}</span>
+                        <span>{c.location}</span>
+                      </div>
+                      <div className="rich-meta-row">
+                        <span>📅 {c.date}</span>
+                        <span>🕐 {c.time}</span>
+                      </div>
+                      <div className="rich-actions">
+                        <Link href={`/dashboard/athlete/classes/${c.id}`} className="btn btn-ghost btn-sm">Abrir</Link>
+                        <button className="icon-action" title="Cancelar" onClick={() => cancelClass(c.name, c.location)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
             <div className="section-head">
               <h2>Aulas Passadas</h2>
               <span>{myClasses.past.length}</span>
             </div>
-            <div className="dash-panel">
-              <div className="dash-panel-body">
-                {myClasses.past.map((c) => (
-                  <div className="schedule-item" key={c.id}>
-                    <span className="schedule-dot" style={{ background: "var(--text-faint)" }} />
-                    <div className="schedule-body">
-                      <p>{c.name}</p>
-                      <span>{c.date} · {c.time} · {c.trainer} · {c.location}</span>
+            <div className="rich-grid">
+              {myClasses.past.map((c) => {
+                const full = availableClasses.find((a) => a.name === c.name);
+                return (
+                  <div className="rich-card" key={c.id} style={{ opacity: 0.7 }}>
+                    <div className="rich-cover" style={{ background: full?.cover || "var(--ink)" }}>
+                      <span className={`badge-status ${c.status}`}>{c.status}</span>
+                    </div>
+                    <div className="rich-body">
+                      <div className="rich-title">{c.name}</div>
+                      <div className="rich-meta-row">
+                        <span>{c.trainer}</span>
+                        <span>{c.location}</span>
+                      </div>
+                      <div className="rich-meta-row">
+                        <span>📅 {c.date}</span>
+                        <span>🕐 {c.time}</span>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </>
         )}

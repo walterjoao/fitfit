@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSession, clearSession } from "@/lib/session";
 import { settingsPath, billingPath, financePath } from "@/lib/accountData";
+import { getNotifications, type Notification } from "@/lib/notifications";
 
 const roleLabel: Record<string, string> = {
   admin: "Admin",
@@ -22,6 +23,7 @@ export default function Header() {
   const [openMenu, setOpenMenu] = useState<"notif" | "create" | "profile" | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const session = useSession();
+  const [liveNotifications, setLiveNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -32,11 +34,17 @@ export default function Header() {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpenMenu(null);
     }
+    function onNotif() {
+      setLiveNotifications(getNotifications());
+    }
     document.addEventListener("click", onDocClick);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("fitpro:notifications", onNotif);
+    onNotif();
     return () => {
       document.removeEventListener("click", onDocClick);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("fitpro:notifications", onNotif);
     };
   }, []);
 
@@ -87,6 +95,15 @@ export default function Header() {
             </button>
             <div className={`menu notif-panel ${openMenu === "notif" ? "open" : ""}`}>
               <div className="notif-head">Notificações</div>
+              {liveNotifications.map((n) => (
+                <div className="notif-item" key={n.id}>
+                  <span className="notif-dot" style={{ background: n.tone === "good" ? "var(--good)" : n.tone === "bad" ? "var(--bad)" : "var(--accent)" }} />
+                  <div className="notif-body">
+                    <p>{n.message}</p>
+                    <span>{n.time}</span>
+                  </div>
+                </div>
+              ))}
               <div className="notif-item">
                 <span className="notif-dot" style={{ background: "var(--good)" }} />
                 <div className="notif-body">
