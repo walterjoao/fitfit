@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { clearSession } from "@/lib/session";
+import { messagesPath } from "@/lib/accountData";
 
 export type Role = "athlete" | "trainer" | "nutritionist" | "gym" | "shop" | "admin";
 
@@ -63,7 +64,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "progress", label: "Progresso", href: "/dashboard/athlete/progress", icon: icons.progress },
     { key: "goals", label: "Objetivos", href: "/dashboard/athlete/goals", icon: icons.goals },
     { key: "nearby", label: "Perto de Ti", href: "/dashboard/athlete/nearby", icon: icons.nearby },
-    { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
+    { key: "messages", label: "Mensagens", href: messagesPath("athlete"), icon: icons.messages },
     { key: "settings", label: "Definições", href: "/dashboard/athlete/settings", icon: icons.settings },
   ],
   trainer: [
@@ -71,7 +72,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "clients", label: "Clientes", href: "/clients", icon: icons.clients },
     { key: "programs", label: "Programas de Treino", href: "/programs", icon: icons.programs },
     { key: "calendar", label: "Calendário", href: "/calendar", icon: icons.calendar },
-    { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
+    { key: "messages", label: "Mensagens", href: messagesPath("trainer"), icon: icons.messages },
     { key: "analytics", label: "Analítica", href: "/analytics", icon: icons.analytics },
     { key: "settings", label: "Definições", href: "/dashboard/settings", icon: icons.settings },
   ],
@@ -82,7 +83,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "tracking", label: "Acompanhamento Nutricional", href: "/dashboard/nutritionist/tracking", icon: icons.tracking },
     { key: "appointments", label: "Consultas", href: "/dashboard/nutritionist/appointments", icon: icons.appointments },
     { key: "reports", label: "Relatórios", href: "/dashboard/nutritionist/reports", icon: icons.reports },
-    { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
+    { key: "messages", label: "Mensagens", href: messagesPath("nutritionist"), icon: icons.messages },
     { key: "settings", label: "Definições", href: "/dashboard/nutritionist/settings", icon: icons.settings },
   ],
   gym: [
@@ -93,7 +94,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "subscriptions", label: "Subscrições", href: "/dashboard/gym/subscriptions", icon: icons.subscriptions },
     { key: "payments", label: "Pagamentos", href: "/dashboard/gym/payments", icon: icons.payments },
     { key: "analytics", label: "Analítica", href: "/dashboard/gym/analytics", icon: icons.analytics },
-    { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
+    { key: "messages", label: "Mensagens", href: messagesPath("gym"), icon: icons.messages },
     { key: "settings", label: "Definições", href: "/dashboard/gym/settings", icon: icons.settings },
   ],
   shop: [
@@ -101,7 +102,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "products", label: "Produtos", href: "/dashboard/shop/products", icon: icons.products },
     { key: "orders", label: "Encomendas", href: "/dashboard/shop/orders", icon: icons.orders },
     { key: "payments", label: "Pagamentos", href: "/dashboard/shop/payments", icon: icons.payments },
-    { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
+    { key: "messages", label: "Mensagens", href: messagesPath("shop"), icon: icons.messages },
     { key: "settings", label: "Definições", href: "/dashboard/shop/settings", icon: icons.settings },
   ],
   admin: [
@@ -117,7 +118,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { key: "shop_products", label: "Produtos (Loja)", href: "/dashboard/shop/products", icon: icons.products },
     { key: "shop_applications", label: "Candidaturas de Loja", href: "/dashboard/admin/shop-applications", icon: icons.apply },
     { key: "analytics", label: "Analítica", href: "/analytics", icon: icons.analytics },
-    { key: "messages", label: "Mensagens", href: "/messages", icon: icons.messages },
+    { key: "messages", label: "Mensagens", href: messagesPath("admin"), icon: icons.messages },
     { key: "settings", label: "Definições", href: "/dashboard/admin/settings", icon: icons.settings },
   ],
 };

@@ -1,15 +1,20 @@
 "use client";
 
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
-import ComingSoon from "@/components/ComingSoon";
+import { useSession } from "@/lib/session";
+import { messagesPath } from "@/lib/accountData";
+import MessagingApp from "@/components/messaging/MessagingApp";
 
 export default function MessagesPage() {
-  return (
-    <>
-      <Sidebar role="trainer" active="messages" />
-      <Header />
-      <ComingSoon title="Mensagens" description="Conversas com os teus clientes e a equipa FitPro." />
-    </>
-  );
+  const session = useSession();
+
+  if (session === undefined) return null;
+
+  if (!session || session.role !== "admin") {
+    if (typeof window !== "undefined") {
+      window.location.href = session ? messagesPath(session.role) : "/";
+    }
+    return null;
+  }
+
+  return <MessagingApp role="admin" />;
 }

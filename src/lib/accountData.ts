@@ -21,6 +21,11 @@ export function financePath(role: string) {
   const base = roleBasePath[role as RoleKey] || "/dashboard";
   return `${base}/finance`;
 }
+export function messagesPath(role: string) {
+  if (role === "admin") return "/messages";
+  const base = roleBasePath[role as RoleKey] || "/dashboard";
+  return `${base}/messages`;
+}
 
 export type SettingsSection = { title: string; description: string };
 

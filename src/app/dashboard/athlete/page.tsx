@@ -193,7 +193,7 @@ export default function AthleteDashboard() {
             </div>
           </Card>
 
-          <Card href="/messages">
+          <Card href="/dashboard/athlete/messages">
             <div className="dash-panel-head">
               <h2>Mensagens Recentes</h2>
               <span>ver tudo</span>

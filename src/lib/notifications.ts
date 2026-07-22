@@ -21,7 +21,7 @@ const seedNotifications: Omit<Notification, "id">[] = [
   { recipient: "tu", message: "A tua Personal Trainer atualizou o teu treino Muscle Growth Program.", time: "há 2 h", tone: "accent", category: "training", read: false, href: "/dashboard/athlete/workouts/muscle-growth" },
   { recipient: "tu", message: "Subiste para #8 no leaderboard de Consistência.", time: "há 2 h", tone: "accent", category: "training", read: true, href: "/leaderboard" },
   { recipient: "tu", message: "Pagamento da subscrição de Julho processado com sucesso.", time: "ontem", tone: "good", category: "payments", read: true, href: "/dashboard/athlete/billing" },
-  { recipient: "tu", message: "Nova mensagem de Ana Ferreira.", time: "ontem", tone: "accent", category: "messages", read: true, href: "/messages" },
+  { recipient: "tu", message: "Nova mensagem de Ana Ferreira.", time: "ontem", tone: "accent", category: "messages", read: true, href: "/dashboard/athlete/messages" },
   { recipient: "tu", message: "A tua marcação com Inês Gonçalves foi confirmada.", time: "há 2 dias", tone: "good", category: "booking", read: true, href: "/dashboard/athlete/book" },
 ];
 

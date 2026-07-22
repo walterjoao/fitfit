@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import { useSession } from "@/lib/session";
+import { messagesPath } from "@/lib/accountData";
 import { lbData, initials, trendGlyph } from "@/lib/data";
 import { slugify } from "@/lib/directory";
 import {
@@ -30,6 +32,8 @@ const scopes = ["Perto de ti", "Cidade", "País", "Global"] as const;
 const periods = ["Hoje", "Semana", "Mês", "Sempre"] as const;
 
 export default function LeaderboardPage() {
+  const session = useSession();
+  const myMessagesPath = session ? messagesPath(session.role) : "/dashboard/athlete/messages";
   const [main, setMain] = useState<MainCategory>("athletes");
   const [lbCat, setLbCat] = useState<LbCat | "geral">("geral");
   const [scope, setScope] = useState<(typeof scopes)[number]>("Global");
@@ -96,7 +100,7 @@ export default function LeaderboardPage() {
                     </div>
                     <div className="rank-actions" onClick={(e) => e.preventDefault()}>
                       <button className="btn btn-primary">Seguir</button>
-                      <Link href="/messages" className="btn btn-ghost">Mensagem</Link>
+                      <Link href={myMessagesPath} className="btn btn-ghost">Mensagem</Link>
                     </div>
                   </Link>
                 ))}

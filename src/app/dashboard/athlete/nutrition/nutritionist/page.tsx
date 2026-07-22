@@ -42,7 +42,7 @@ export default function AthleteNutritionistPage() {
         </div>
 
         <div className="rich-actions" style={{ maxWidth: 560, marginTop: 16 }}>
-          <Link href="/messages" className="btn btn-primary">Enviar Mensagem</Link>
+          <Link href="/dashboard/athlete/messages" className="btn btn-primary">Enviar Mensagem</Link>
           <Link href="/dashboard/athlete/nutrition/plan" className="btn btn-ghost">Ver Plano</Link>
           <Link href="/dashboard/athlete/nutrition/log" className="btn btn-ghost">Pedir Alteração</Link>
           <Link href="/dashboard/athlete/book" className="btn btn-ghost">Marcar Consulta</Link>

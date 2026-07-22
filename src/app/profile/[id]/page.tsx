@@ -10,7 +10,7 @@ import { useSession } from "@/lib/session";
 import { getProfile, isFollowing, toggleFollow } from "@/lib/directory";
 import { bookableTrainers, bookableGyms, bookableNutritionists, availableClasses } from "@/lib/workoutsData";
 import { products, catIcon, catBg, stockLabel } from "@/lib/data";
-import { plansByRole } from "@/lib/accountData";
+import { plansByRole, messagesPath } from "@/lib/accountData";
 
 const roleLabel: Record<string, string> = {
   athlete: "Atleta",
@@ -105,7 +105,7 @@ export default function ProfilePage() {
               >
                 {following ? "A Seguir ✓" : "Seguir"}
               </button>
-              <Link href="/messages" className="btn btn-ghost">Mensagem</Link>
+              <Link href={session ? messagesPath(session.role) : "/dashboard/athlete/messages"} className="btn btn-ghost">Mensagem</Link>
               {profile.whatsapp && (
                 <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
                   WhatsApp

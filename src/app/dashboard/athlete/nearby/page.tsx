@@ -170,7 +170,7 @@ export default function NearbyPage() {
                           {e.type === "gym" && (
                             <Link href="/dashboard/athlete/classes" className="btn btn-ghost">Ver Aulas</Link>
                           )}
-                          <Link href="/messages" className="btn btn-ghost">Mensagem</Link>
+                          <Link href="/dashboard/athlete/messages" className="btn btn-ghost">Mensagem</Link>
                         </div>
                       </div>
                     </Link>
