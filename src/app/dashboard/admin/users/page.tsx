@@ -54,7 +54,8 @@ export default function AdminUsersPage() {
   if (!ready) return null;
 
   function toggleStatus(id: string) {
-    const next = { ...statuses, [id]: statuses[id] === "suspended" ? "active" : "suspended" as const };
+    const newStatus: "active" | "suspended" = statuses[id] === "suspended" ? "active" : "suspended";
+    const next: Record<string, "active" | "suspended"> = { ...statuses, [id]: newStatus };
     setStatuses(next);
     saveStatuses(next);
   }
