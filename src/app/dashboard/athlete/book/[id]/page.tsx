@@ -8,6 +8,7 @@ import Sidebar from "@/components/Sidebar";
 import { useRoleGuard } from "@/lib/session";
 import { notifyAndEmail } from "@/lib/notifications";
 import { bookableTrainers, bookableNutritionists } from "@/lib/workoutsData";
+import { addBooking } from "@/lib/bookings";
 
 export default function SessionDetailPage() {
   const { session, ready } = useRoleGuard("athlete");
@@ -33,6 +34,27 @@ export default function SessionDetailPage() {
 
   function confirmBooking() {
     setConfirmed(true);
+    const [date, time] = (slot || "").split(/ (?=\d{2}:\d{2})/);
+    addBooking({
+      athleteName: session?.name || "Tiago Kiala",
+      professionalId: provider!.id,
+      professionalName: provider!.name,
+      professionalRole: isTrainer ? "Personal Trainer" : "Nutricionista",
+      professionalPhoto: provider!.photo,
+      kind: isTrainer ? "pt" : "nutrition",
+      title: isTrainer ? "Sessão Personal Training" : "Consulta de Nutrição",
+      tag: `${isTrainer ? "🏋️" : "🥗"} ${provider!.specialty}`,
+      date: date || "Data a confirmar",
+      time: time || slot || "",
+      durationMin: provider!.durationMin,
+      location: provider!.sessionType === "Online" ? "Online" : "FitPro Gym Luanda",
+      price: provider!.price,
+      status: "pending",
+      paymentStatus: "pending",
+      description: provider!.description,
+      preparation: ["Roupa de treino confortável", "Garrafa de água", "Chegar 10 min antes"],
+      notes: [],
+    });
     notifyAndEmail(provider!.name, `${session?.name || "O atleta"} reservou uma sessão com ${provider!.name} (${slot}).`, "good");
   }
 
