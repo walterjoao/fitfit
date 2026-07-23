@@ -216,9 +216,20 @@ export default function MessagingApp({ role }: { role: Role }) {
                   {typing && <div className="typing-indicator">{selected.name} está a escrever…</div>}
                 </div>
                 <div className="chat-active-input">
-                  <button className="chat-attach-btn" title="Anexar ficheiro">
+                  <label className="chat-attach-btn" title="Anexar ficheiro" style={{ cursor: "pointer" }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.4 11.1 12.4 20a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 1 1-3-3l8-8" /></svg>
-                  </button>
+                    <input
+                      type="file"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file || !selected) return;
+                        const msg: ChatMsg = { id: Math.random().toString(36).slice(2), from: "me", text: `📎 ${file.name}`, time: new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }), type: "text" };
+                        update(conversations.map((c) => (c.id === selected.id ? { ...c, messages: [...c.messages, msg], lastMessage: msg.text, lastTime: "agora" } : c)));
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
                   <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendMessage()} placeholder="Escreve uma mensagem…" />
                   <button className="chat-send-btn" onClick={sendMessage}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" /></svg>

@@ -32,6 +32,10 @@ export default function ProgramsPage() {
   const [customWorkouts, setCustomWorkouts] = useState<CustomWorkout[]>([]);
   const [customExercises, setCustomExercises] = useState<LibraryExercise[]>([]);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
+  const [expandedClass, setExpandedClass] = useState<string | null>(null);
+  const [editingClass, setEditingClass] = useState<string | null>(null);
+  const [showNewClass, setShowNewClass] = useState(false);
+  const [classForm, setClassForm] = useState({ name: "", schedule: "", maxParticipants: 15 });
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
 
   // Library filters
@@ -106,6 +110,26 @@ export default function ProgramsPage() {
     const next = classes.filter((c) => c.id !== id);
     setClasses(next);
     saveClasses(next);
+  }
+
+  function saveClassEdit(id: string) {
+    const next = classes.map((c) => (c.id === id ? { ...c, name: classForm.name, schedule: classForm.schedule, maxParticipants: classForm.maxParticipants } : c));
+    setClasses(next);
+    saveClasses(next);
+    setEditingClass(null);
+  }
+
+  function createNewClass() {
+    if (!classForm.name) return;
+    const newClass = {
+      id: Math.random().toString(36).slice(2), name: classForm.name, description: "Nova aula de grupo criada por ti.",
+      maxParticipants: classForm.maxParticipants, enrolled: 0, schedule: classForm.schedule || "A definir",
+      image: classes[0]?.image || "", instructor: "Ana Ferreira", rating: 5,
+    };
+    const next = [...classes, newClass];
+    setClasses(next);
+    saveClasses(next);
+    setShowNewClass(false);
   }
 
   function submitNewExercise() {
@@ -244,7 +268,20 @@ export default function ProgramsPage() {
                       <div className="rich-actions" style={{ flexWrap: "wrap" }}>
                         <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => setExpandedWorkout(expandedWorkout === w.id ? null : w.id)}>{expandedWorkout === w.id ? "Fechar" : "Ver"}</button>
                         <button className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={() => { setTab("assign"); setSelectedWorkout(w.id); setAssignStep(1); }}>Atribuir</button>
-                        <button className="btn btn-ghost btn-sm" style={{ flex: 1 }}>Duplicar</button>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          style={{ flex: 1 }}
+                          onClick={() =>
+                            setCustomWorkouts(
+                              addCustomWorkout({
+                                name: `${w.name} (Cópia)`, description: w.description, goal: w.type, difficulty: w.difficulty, durationMin: w.durationMin, category: w.type, cover: w.cover,
+                                exercises: w.exercises.map((ex) => ({ id: `${ex.id}-${Math.random().toString(36).slice(2, 6)}`, name: ex.name, muscles: ex.muscles, instructions: ex.instructions, sets: ex.sets, reps: ex.reps, restSeconds: ex.restSeconds, gifUrl: ex.gifUrl })),
+                              })
+                            )
+                          }
+                        >
+                          Duplicar
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -435,25 +472,58 @@ export default function ProgramsPage() {
                   <span className="rich-badge">⭐ {c.rating.toFixed(1)}</span>
                 </div>
                 <div className="rich-body">
-                  <div className="rich-title">{c.name}</div>
-                  <p className="rich-desc">{c.description}</p>
-                  <div className="rich-meta-row"><span>👤 {c.instructor}</span></div>
-                  <div className="rich-meta-row"><span>📅 {c.schedule}</span></div>
-                  <div className="rich-meta-row"><span>{c.enrolled}/{c.maxParticipants} inscritos</span></div>
-                  <div className="rich-progress"><div className="rich-progress-fill" style={{ width: `${(c.enrolled / c.maxParticipants) * 100}%` }} /></div>
-                  <div className="rich-actions">
-                    <button className="btn btn-ghost btn-sm" style={{ flex: 1 }}>Ver Inscritos</button>
-                    <button className="btn btn-ghost btn-sm" style={{ flex: 1 }}>Editar</button>
-                    <button className="icon-action" title="Cancelar aula" onClick={() => cancelClass(c.id)}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                    </button>
-                  </div>
+                  {editingClass === c.id ? (
+                    <>
+                      <input className="field-input" style={{ marginBottom: 8 }} value={classForm.name} onChange={(e) => setClassForm((f) => ({ ...f, name: e.target.value }))} />
+                      <input className="field-input" style={{ marginBottom: 8 }} value={classForm.schedule} onChange={(e) => setClassForm((f) => ({ ...f, schedule: e.target.value }))} placeholder="Horário" />
+                      <input className="field-input" style={{ marginBottom: 8 }} type="number" value={classForm.maxParticipants} onChange={(e) => setClassForm((f) => ({ ...f, maxParticipants: Number(e.target.value) }))} placeholder="Máx. participantes" />
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button className="btn btn-primary btn-sm" onClick={() => saveClassEdit(c.id)}>Guardar</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setEditingClass(null)}>Cancelar</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="rich-title">{c.name}</div>
+                      <p className="rich-desc">{c.description}</p>
+                      <div className="rich-meta-row"><span>👤 {c.instructor}</span></div>
+                      <div className="rich-meta-row"><span>📅 {c.schedule}</span></div>
+                      <div className="rich-meta-row"><span>{c.enrolled}/{c.maxParticipants} inscritos</span></div>
+                      <div className="rich-progress"><div className="rich-progress-fill" style={{ width: `${(c.enrolled / c.maxParticipants) * 100}%` }} /></div>
+                      {expandedClass === c.id && (
+                        <div style={{ fontSize: 12, color: "var(--text-dim)", borderTop: "1px solid var(--line)", paddingTop: 8 }}>
+                          {trainees.slice(0, Math.min(c.enrolled, trainees.length)).map((t) => <div key={t.id}>{t.name}</div>)}
+                        </div>
+                      )}
+                      <div className="rich-actions">
+                        <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => setExpandedClass(expandedClass === c.id ? null : c.id)}>{expandedClass === c.id ? "Ocultar" : "Ver Inscritos"}</button>
+                        <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => { setEditingClass(c.id); setClassForm({ name: c.name, schedule: c.schedule, maxParticipants: c.maxParticipants }); }}>Editar</button>
+                        <button className="icon-action" title="Cancelar aula" onClick={() => cancelClass(c.id)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
-            <div className="rich-card" style={{ alignItems: "center", justifyContent: "center", display: "flex", minHeight: 200, cursor: "pointer" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)" }}>+ Criar Nova Aula</span>
-            </div>
+            {showNewClass ? (
+              <div className="rich-card" style={{ padding: 16 }}>
+                <div className="rich-body" style={{ padding: 0 }}>
+                  <input className="field-input" style={{ marginBottom: 8 }} value={classForm.name} onChange={(e) => setClassForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nome da aula" />
+                  <input className="field-input" style={{ marginBottom: 8 }} value={classForm.schedule} onChange={(e) => setClassForm((f) => ({ ...f, schedule: e.target.value }))} placeholder="Horário (ex: Seg/Qua · 18:00)" />
+                  <input className="field-input" style={{ marginBottom: 8 }} type="number" value={classForm.maxParticipants} onChange={(e) => setClassForm((f) => ({ ...f, maxParticipants: Number(e.target.value) }))} placeholder="Máx. participantes" />
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button className="btn btn-primary btn-sm" disabled={!classForm.name} onClick={createNewClass}>Criar</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setShowNewClass(false)}>Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rich-card" style={{ alignItems: "center", justifyContent: "center", display: "flex", minHeight: 200, cursor: "pointer" }} onClick={() => { setShowNewClass(true); setClassForm({ name: "", schedule: "", maxParticipants: 15 }); }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)" }}>+ Criar Nova Aula</span>
+              </div>
+            )}
           </div>
         )}
 

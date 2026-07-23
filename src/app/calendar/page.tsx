@@ -15,6 +15,7 @@ function initials(n: string) {
 export default function CalendarPage() {
   const { ready } = useRoleGuard("trainer");
   const [tab, setTab] = useState<Tab>("calendar");
+  const [expandedSession, setExpandedSession] = useState<string | null>(null);
   const [view, setView] = useState<"day" | "week" | "month">("day");
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [pricing, setPricing] = useState<PricingPlan[]>([]);
@@ -63,14 +64,21 @@ export default function CalendarPage() {
               <div className="dash-panel-head"><h2>Hoje</h2><span>{todaySessions.length} sessões</span></div>
               <div className="dash-panel-body">
                 {todaySessions.map((s) => (
-                  <div className="schedule-item" key={s.id}>
-                    <span className="lb-av">{initials(s.traineeName)}</span>
-                    <div className="schedule-body">
-                      <p>{s.traineeName}</p>
-                      <span>{s.time} · {s.type}</span>
+                  <div key={s.id}>
+                    <div className="schedule-item">
+                      <span className="lb-av">{initials(s.traineeName)}</span>
+                      <div className="schedule-body">
+                        <p>{s.traineeName}</p>
+                        <span>{s.time} · {s.type}</span>
+                      </div>
+                      <span className={`badge-status ${s.status === "concluída" ? "concluída" : "confirmada"}`} style={{ marginLeft: "auto", marginRight: 10 }}>{s.status}</span>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setExpandedSession(expandedSession === s.id ? null : s.id)}>{expandedSession === s.id ? "Ocultar" : "Ver Detalhes"}</button>
                     </div>
-                    <span className={`badge-status ${s.status === "concluída" ? "concluída" : "confirmada"}`} style={{ marginLeft: "auto", marginRight: 10 }}>{s.status}</span>
-                    <button className="btn btn-ghost btn-sm">Ver Detalhes</button>
+                    {expandedSession === s.id && (
+                      <div style={{ padding: "0 20px 14px 54px", fontSize: 12.5, color: "var(--text-dim)" }}>
+                        Sessão {s.type.toLowerCase()} às {s.time} com {s.traineeName}. Estado: {s.status}.
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

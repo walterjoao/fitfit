@@ -29,6 +29,12 @@ export default function TrainerDashboard() {
   const { ready } = useRoleGuard("trainer");
   const [metric, setMetric] = useState<keyof typeof trendByMetric>("earnings");
   const [period, setPeriod] = useState<Period>("30d");
+  const [sessions, setSessions] = useState(todaySessions);
+
+  function startSession(id: string) {
+    setSessions((list) => list.map((s) => (s.id === id ? { ...s, status: "concluída" as const } : s)));
+  }
+
   if (!ready) return null;
 
   const trend = trendByMetric[metric];
@@ -60,8 +66,8 @@ export default function TrainerDashboard() {
           </Link>
           <Link href="/calendar" className="stat-card" style={{ textDecoration: "none", color: "inherit" }}>
             <div className="stat-top"><span className="stat-label">📅 Sessões Hoje</span></div>
-            <div className="stat-value tabular">{todaySessions.length}</div>
-            <div className="stat-delta up">{todaySessions.filter((s) => s.status === "concluída").length} concluídas</div>
+            <div className="stat-value tabular">{sessions.length}</div>
+            <div className="stat-delta up">{sessions.filter((s) => s.status === "concluída").length} concluídas</div>
           </Link>
           <Link href={messagesPath("trainer")} className="stat-card" style={{ textDecoration: "none", color: "inherit" }}>
             <div className="stat-top"><span className="stat-label">💬 Novas Mensagens</span></div>
@@ -100,7 +106,7 @@ export default function TrainerDashboard() {
           <div className="dash-panel">
             <div className="dash-panel-head"><h2>Sessões de Hoje</h2><Link href="/calendar" style={{ fontSize: 11.5, color: "var(--accent-ink)" }}>Calendário →</Link></div>
             <div className="dash-panel-body">
-              {todaySessions.map((s) => (
+              {sessions.map((s) => (
                 <div className="schedule-item" key={s.id}>
                   <span className="lb-av">{initials(s.traineeName)}</span>
                   <div className="schedule-body">
@@ -108,7 +114,7 @@ export default function TrainerDashboard() {
                     <span>{s.time} · {s.type}</span>
                   </div>
                   <span className={`badge-status ${s.status === "concluída" ? "concluída" : "confirmada"}`} style={{ marginLeft: "auto", marginRight: 10 }}>{s.status}</span>
-                  {s.status !== "concluída" && <button className="btn btn-ghost btn-sm">Iniciar</button>}
+                  {s.status !== "concluída" && <button className="btn btn-ghost btn-sm" onClick={() => startSession(s.id)}>Iniciar</button>}
                 </div>
               ))}
             </div>
