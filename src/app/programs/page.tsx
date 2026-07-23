@@ -35,7 +35,7 @@ export default function ProgramsPage() {
   const [expandedClass, setExpandedClass] = useState<string | null>(null);
   const [editingClass, setEditingClass] = useState<string | null>(null);
   const [showNewClass, setShowNewClass] = useState(false);
-  const [classForm, setClassForm] = useState({ name: "", schedule: "", maxParticipants: 15 });
+  const [classForm, setClassForm] = useState({ name: "", schedule: "", maxParticipants: 15, category: categories[0], difficulty: "Intermédio", durationMin: 45, location: "", description: "" });
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
 
   // Library filters
@@ -60,6 +60,9 @@ export default function ProgramsPage() {
   const [assignNotes, setAssignNotes] = useState("");
   const [assigned, setAssigned] = useState(false);
   const [filterTrainee, setFilterTrainee] = useState("all");
+  const [athleteSearch, setAthleteSearch] = useState("");
+  const [athleteGoalFilter, setAthleteGoalFilter] = useState("all");
+  const [athleteStatusFilter, setAthleteStatusFilter] = useState("all");
 
   useEffect(() => {
     setClasses(getClasses());
@@ -77,8 +80,8 @@ export default function ProgramsPage() {
   const myWorkouts = assignedWorkouts.filter((w) => w.trainerId === "ana-ferreira");
   const allWorkoutsForAssign = useMemo(
     () => [
-      ...myWorkouts.map((w) => ({ id: w.id, name: w.name, difficulty: w.difficulty, durationMin: w.durationMin, cover: w.cover, goal: w.type, custom: false })),
-      ...customWorkouts.map((w) => ({ id: w.id, name: w.name, difficulty: w.difficulty, durationMin: w.durationMin, cover: w.cover, goal: w.goal, custom: true })),
+      ...myWorkouts.map((w) => ({ id: w.id, name: w.name, difficulty: w.difficulty, durationMin: w.durationMin, cover: w.cover, goal: w.type, custom: false, exerciseCount: w.exercises.length, createdDate: null as string | null })),
+      ...customWorkouts.map((w) => ({ id: w.id, name: w.name, difficulty: w.difficulty, durationMin: w.durationMin, cover: w.cover, goal: w.goal, custom: true, exerciseCount: w.exercises.length, createdDate: w.createdDate as string | null })),
     ],
     [customWorkouts]
   );
@@ -113,7 +116,11 @@ export default function ProgramsPage() {
   }
 
   function saveClassEdit(id: string) {
-    const next = classes.map((c) => (c.id === id ? { ...c, name: classForm.name, schedule: classForm.schedule, maxParticipants: classForm.maxParticipants } : c));
+    const next = classes.map((c) =>
+      c.id === id
+        ? { ...c, name: classForm.name, schedule: classForm.schedule, maxParticipants: classForm.maxParticipants, category: classForm.category, difficulty: classForm.difficulty, durationMin: classForm.durationMin, location: classForm.location, description: classForm.description || c.description }
+        : c
+    );
     setClasses(next);
     saveClasses(next);
     setEditingClass(null);
@@ -122,9 +129,10 @@ export default function ProgramsPage() {
   function createNewClass() {
     if (!classForm.name) return;
     const newClass = {
-      id: Math.random().toString(36).slice(2), name: classForm.name, description: "Nova aula de grupo criada por ti.",
+      id: Math.random().toString(36).slice(2), name: classForm.name, description: classForm.description || "Nova aula de grupo criada por ti.",
       maxParticipants: classForm.maxParticipants, enrolled: 0, schedule: classForm.schedule || "A definir",
-      image: classes[0]?.image || "", instructor: "Ana Ferreira", rating: 5,
+      image: classes[0]?.image || "", instructor: "Ana Ferreira", rating: 0,
+      category: classForm.category, difficulty: classForm.difficulty, durationMin: classForm.durationMin, location: classForm.location || "A definir", benefits: [],
     };
     const next = [...classes, newClass];
     setClasses(next);
@@ -177,6 +185,15 @@ export default function ProgramsPage() {
   function toggleTrainee(id: string) {
     setSelectedTrainees((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   }
+
+  const athleteGoals = [...new Set(trainees.map((t) => t.goal))];
+  const filteredAthletes = trainees.filter((t) => {
+    const matchesSearch = !athleteSearch || t.name.toLowerCase().includes(athleteSearch.toLowerCase());
+    const matchesGoal = athleteGoalFilter === "all" || t.goal === athleteGoalFilter;
+    const matchesStatus = athleteStatusFilter === "all" || t.status === athleteStatusFilter;
+    return matchesSearch && matchesGoal && matchesStatus;
+  });
+  const statusMeta: Record<string, string> = { on: "🟢 Em dia", risk: "🔴 Em risco", paused: "🟡 Pausado", inactive: "⚪ Inativo" };
   function toggleDay(d: string) {
     setTrainingDays((list) => (list.includes(d) ? list.filter((x) => x !== d) : [...list, d]));
   }
@@ -469,12 +486,23 @@ export default function ProgramsPage() {
             {classes.map((c) => (
               <div className="rich-card" key={c.id}>
                 <div className="rich-cover" style={{ background: `url(${c.image}) center/cover no-repeat` }}>
-                  <span className="rich-badge">⭐ {c.rating.toFixed(1)}</span>
+                  <span className="rich-badge">{c.enrolled}/{c.maxParticipants} vagas</span>
                 </div>
                 <div className="rich-body">
                   {editingClass === c.id ? (
                     <>
-                      <input className="field-input" style={{ marginBottom: 8 }} value={classForm.name} onChange={(e) => setClassForm((f) => ({ ...f, name: e.target.value }))} />
+                      <input className="field-input" style={{ marginBottom: 8 }} value={classForm.name} onChange={(e) => setClassForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nome da aula" />
+                      <input className="field-input" style={{ marginBottom: 8 }} value={classForm.description} onChange={(e) => setClassForm((f) => ({ ...f, description: e.target.value }))} placeholder="Descrição" />
+                      <div className="form-grid" style={{ marginBottom: 8 }}>
+                        <select className="field-input" value={classForm.category} onChange={(e) => setClassForm((f) => ({ ...f, category: e.target.value }))}>
+                          {categories.map((c2) => <option key={c2}>{c2}</option>)}
+                        </select>
+                        <select className="field-input" value={classForm.difficulty} onChange={(e) => setClassForm((f) => ({ ...f, difficulty: e.target.value }))}>
+                          <option>Iniciante</option><option>Intermédio</option><option>Avançado</option>
+                        </select>
+                        <input className="field-input" type="number" value={classForm.durationMin} onChange={(e) => setClassForm((f) => ({ ...f, durationMin: Number(e.target.value) }))} placeholder="Duração (min)" />
+                        <input className="field-input" value={classForm.location} onChange={(e) => setClassForm((f) => ({ ...f, location: e.target.value }))} placeholder="Localização" />
+                      </div>
                       <input className="field-input" style={{ marginBottom: 8 }} value={classForm.schedule} onChange={(e) => setClassForm((f) => ({ ...f, schedule: e.target.value }))} placeholder="Horário" />
                       <input className="field-input" style={{ marginBottom: 8 }} type="number" value={classForm.maxParticipants} onChange={(e) => setClassForm((f) => ({ ...f, maxParticipants: Number(e.target.value) }))} placeholder="Máx. participantes" />
                       <div style={{ display: "flex", gap: 8 }}>
@@ -486,10 +514,14 @@ export default function ProgramsPage() {
                     <>
                       <div className="rich-title">{c.name}</div>
                       <p className="rich-desc">{c.description}</p>
-                      <div className="rich-meta-row"><span>👤 {c.instructor}</span></div>
-                      <div className="rich-meta-row"><span>📅 {c.schedule}</span></div>
+                      <div className="rich-meta-row"><span>🏷️ {c.category}</span><span>{c.difficulty}</span></div>
+                      <div className="rich-meta-row"><span>👤 {c.instructor}</span><span>📍 {c.location}</span></div>
+                      <div className="rich-meta-row"><span>📅 {c.schedule}</span><span>⏱ {c.durationMin} min</span></div>
                       <div className="rich-meta-row"><span>{c.enrolled}/{c.maxParticipants} inscritos</span></div>
                       <div className="rich-progress"><div className="rich-progress-fill" style={{ width: `${(c.enrolled / c.maxParticipants) * 100}%` }} /></div>
+                      {c.benefits.length > 0 && (
+                        <div className="rich-meta-row">{c.benefits.map((b) => <span key={b}>{b}</span>)}</div>
+                      )}
                       {expandedClass === c.id && (
                         <div style={{ fontSize: 12, color: "var(--text-dim)", borderTop: "1px solid var(--line)", paddingTop: 8 }}>
                           {trainees.slice(0, Math.min(c.enrolled, trainees.length)).map((t) => <div key={t.id}>{t.name}</div>)}
@@ -497,7 +529,16 @@ export default function ProgramsPage() {
                       )}
                       <div className="rich-actions">
                         <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => setExpandedClass(expandedClass === c.id ? null : c.id)}>{expandedClass === c.id ? "Ocultar" : "Ver Inscritos"}</button>
-                        <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => { setEditingClass(c.id); setClassForm({ name: c.name, schedule: c.schedule, maxParticipants: c.maxParticipants }); }}>Editar</button>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          style={{ flex: 1 }}
+                          onClick={() => {
+                            setEditingClass(c.id);
+                            setClassForm({ name: c.name, schedule: c.schedule, maxParticipants: c.maxParticipants, category: c.category, difficulty: c.difficulty, durationMin: c.durationMin, location: c.location, description: c.description });
+                          }}
+                        >
+                          Editar
+                        </button>
                         <button className="icon-action" title="Cancelar aula" onClick={() => cancelClass(c.id)}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
                         </button>
@@ -510,9 +551,21 @@ export default function ProgramsPage() {
             {showNewClass ? (
               <div className="rich-card" style={{ padding: 16 }}>
                 <div className="rich-body" style={{ padding: 0 }}>
+                  <label className="media-drop" style={{ display: "block", marginBottom: 8, fontSize: 11.5 }}>Capa da Aula (imagem)<input type="file" accept="image/*" style={{ display: "none" }} /></label>
                   <input className="field-input" style={{ marginBottom: 8 }} value={classForm.name} onChange={(e) => setClassForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nome da aula" />
+                  <input className="field-input" style={{ marginBottom: 8 }} value={classForm.description} onChange={(e) => setClassForm((f) => ({ ...f, description: e.target.value }))} placeholder="Descrição" />
+                  <div className="form-grid" style={{ marginBottom: 8 }}>
+                    <select className="field-input" value={classForm.category} onChange={(e) => setClassForm((f) => ({ ...f, category: e.target.value }))}>
+                      {categories.map((c) => <option key={c}>{c}</option>)}
+                    </select>
+                    <select className="field-input" value={classForm.difficulty} onChange={(e) => setClassForm((f) => ({ ...f, difficulty: e.target.value }))}>
+                      <option>Iniciante</option><option>Intermédio</option><option>Avançado</option>
+                    </select>
+                    <input className="field-input" type="number" value={classForm.durationMin} onChange={(e) => setClassForm((f) => ({ ...f, durationMin: Number(e.target.value) }))} placeholder="Duração (min)" />
+                    <input className="field-input" value={classForm.location} onChange={(e) => setClassForm((f) => ({ ...f, location: e.target.value }))} placeholder="Localização" />
+                  </div>
                   <input className="field-input" style={{ marginBottom: 8 }} value={classForm.schedule} onChange={(e) => setClassForm((f) => ({ ...f, schedule: e.target.value }))} placeholder="Horário (ex: Seg/Qua · 18:00)" />
-                  <input className="field-input" style={{ marginBottom: 8 }} type="number" value={classForm.maxParticipants} onChange={(e) => setClassForm((f) => ({ ...f, maxParticipants: Number(e.target.value) }))} placeholder="Máx. participantes" />
+                  <input className="field-input" style={{ marginBottom: 8 }} type="number" value={classForm.maxParticipants} onChange={(e) => setClassForm((f) => ({ ...f, maxParticipants: Number(e.target.value) }))} placeholder="Máx. participantes (capacidade)" />
                   <div style={{ display: "flex", gap: 8 }}>
                     <button className="btn btn-primary btn-sm" disabled={!classForm.name} onClick={createNewClass}>Criar</button>
                     <button className="btn btn-ghost btn-sm" onClick={() => setShowNewClass(false)}>Cancelar</button>
@@ -520,7 +573,11 @@ export default function ProgramsPage() {
                 </div>
               </div>
             ) : (
-              <div className="rich-card" style={{ alignItems: "center", justifyContent: "center", display: "flex", minHeight: 200, cursor: "pointer" }} onClick={() => { setShowNewClass(true); setClassForm({ name: "", schedule: "", maxParticipants: 15 }); }}>
+              <div
+                className="rich-card"
+                style={{ alignItems: "center", justifyContent: "center", display: "flex", minHeight: 200, cursor: "pointer" }}
+                onClick={() => { setShowNewClass(true); setClassForm({ name: "", schedule: "", maxParticipants: 15, category: categories[0], difficulty: "Intermédio", durationMin: 45, location: "", description: "" }); }}
+              >
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)" }}>+ Criar Nova Aula</span>
               </div>
             )}
@@ -538,19 +595,68 @@ export default function ProgramsPage() {
               {assignStep === 1 && (
                 <>
                   <div className="settings-section-head"><h2>1. Seleciona os Atletas</h2></div>
-                  <div className="rich-grid" style={{ marginBottom: 16 }}>
-                    {trainees.map((t) => (
-                      <div key={t.id} className="rich-card" style={{ cursor: "pointer", border: selectedTrainees.includes(t.id) ? "2px solid var(--accent)" : undefined }} onClick={() => toggleTrainee(t.id)}>
-                        <div className="rich-cover" style={{ background: `url(${t.avatar}) center/cover no-repeat`, height: 90 }}>
-                          {selectedTrainees.includes(t.id) && <span className="rich-badge">✓ Selecionado</span>}
-                        </div>
-                        <div className="rich-body" style={{ padding: 12 }}>
-                          <div className="rich-title" style={{ fontSize: 13 }}>{t.name}</div>
-                          <div className="rich-meta-row"><span>🎯 {t.goal}</span></div>
-                          <div className="rich-meta-row"><span>{t.program}</span></div>
-                        </div>
+
+                  {selectedTrainees.length > 0 && (
+                    <div className="dash-panel" style={{ padding: 12, marginBottom: 14, background: "var(--surface-2)" }}>
+                      <p style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text-faint)", marginBottom: 8, textTransform: "uppercase" }}>Selecionados: {selectedTrainees.length}</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {selectedTrainees.map((id) => {
+                          const t = trainees.find((x) => x.id === id);
+                          if (!t) return null;
+                          return (
+                            <span key={id} className="pill active" style={{ cursor: "pointer" }} onClick={() => toggleTrainee(id)}>
+                              {t.name} ✕
+                            </span>
+                          );
+                        })}
                       </div>
-                    ))}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+                    <div className="search" style={{ maxWidth: 260 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                      <input value={athleteSearch} onChange={(e) => setAthleteSearch(e.target.value)} placeholder="Procurar atleta…" />
+                    </div>
+                    <select className="field-input" style={{ maxWidth: 180 }} value={athleteGoalFilter} onChange={(e) => setAthleteGoalFilter(e.target.value)}>
+                      <option value="all">Todos os objetivos</option>
+                      {athleteGoals.map((g) => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                    <select className="field-input" style={{ maxWidth: 180 }} value={athleteStatusFilter} onChange={(e) => setAthleteStatusFilter(e.target.value)}>
+                      <option value="all">Todos os estados</option>
+                      <option value="on">🟢 Em dia</option>
+                      <option value="risk">🔴 Em risco</option>
+                      <option value="paused">🟡 Pausado</option>
+                    </select>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setSelectedTrainees(filteredAthletes.map((t) => t.id))}>Selecionar Todos</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setSelectedTrainees([])}>Limpar</button>
+                  </div>
+
+                  <div className="rich-grid" style={{ marginBottom: 16 }}>
+                    {filteredAthletes.map((t) => {
+                      const selected = selectedTrainees.includes(t.id);
+                      return (
+                        <div key={t.id} className="rich-card" style={{ cursor: "pointer", border: selected ? "2px solid var(--accent)" : undefined, position: "relative" }} onClick={() => toggleTrainee(t.id)}>
+                          <div className="rich-cover" style={{ background: `url(${t.avatar}) center/cover no-repeat`, height: 100 }}>
+                            <span className={`badge ${t.status}`}>{statusMeta[t.status]}</span>
+                            <input type="checkbox" checked={selected} readOnly style={{ position: "absolute", top: 12, right: 12, width: 18, height: 18 }} />
+                          </div>
+                          <div className="rich-body" style={{ padding: 12 }}>
+                            <div className="rich-title" style={{ fontSize: 13.5 }}>{t.name}</div>
+                            <div className="rich-meta-row"><span>📍 {t.location}</span></div>
+                            <div className="rich-meta-row"><span>🎯 {t.goal}</span><span>Nível: {t.level}</span></div>
+                            <div className="rich-meta-row"><span>{t.program}</span></div>
+                            <div className="rich-meta-row" style={{ justifyContent: "space-between" }}>
+                              <span>Progresso</span>
+                              <span className="tabular">{t.progress}%</span>
+                            </div>
+                            <div className="rich-progress"><div className="rich-progress-fill" style={{ width: `${t.progress}%` }} /></div>
+                            <div className="rich-meta-row"><span>Última atividade: {t.lastActivity}</span></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {filteredAthletes.length === 0 && <p style={{ fontSize: 12.5, color: "var(--text-faint)" }}>Sem atletas para estes filtros.</p>}
                   </div>
                   <button className="auth-submit" style={{ maxWidth: 200 }} disabled={selectedTrainees.length === 0} onClick={() => setAssignStep(2)}>Seguinte</button>
                 </>
@@ -565,7 +671,9 @@ export default function ProgramsPage() {
                         <div className="rich-cover" style={{ background: w.cover, height: 90 }}><span className="rich-badge">{w.difficulty}</span></div>
                         <div className="rich-body" style={{ padding: 12 }}>
                           <div className="rich-title" style={{ fontSize: 13 }}>{w.name}</div>
-                          <div className="rich-meta-row"><span>⏱ {w.durationMin} min</span></div>
+                          <div className="rich-meta-row"><span>🎯 {w.goal}</span></div>
+                          <div className="rich-meta-row"><span>⏱ {w.durationMin} min</span><span>{w.exerciseCount} exercícios</span></div>
+                          {w.createdDate && <div className="rich-meta-row"><span>Criado {w.createdDate}</span></div>}
                         </div>
                       </div>
                     ))}

@@ -15,18 +15,20 @@ function write<T>(key: string, value: T) {
 }
 
 export type TraineeStatus = "on" | "risk" | "paused" | "inactive";
+export type TraineeLevel = "Iniciante" | "Intermédio" | "Avançado";
 export type Trainee = {
   id: string; profileId: string; name: string; email: string; avatar: string;
   goal: string; program: string; progress: number; lastActivity: string; status: TraineeStatus;
+  location: string; level: TraineeLevel;
 };
 
 export const trainees: Trainee[] = [
-  { id: "tr1", profileId: "tiago-kiala", name: "Tiago Kiala", email: "tiago.kiala@fitpro.com", avatar: portraitImages.athlete[0], goal: "Consistência", program: "Consistência · 6 sem.", progress: 90, lastActivity: "Há 2 horas", status: "on" },
-  { id: "tr2", profileId: "carla-domingos", name: "Carla Domingos", email: "carla.domingos@fitpro.com", avatar: portraitImages.athlete[1], goal: "Transformação", program: "Transformação · 12 sem.", progress: 82, lastActivity: "Ontem", status: "on" },
-  { id: "tr3", profileId: "rui-ferreira-athlete", name: "Rui Ferreira", email: "rui.ferreira@fitpro.com", avatar: portraitImages.athlete[0], goal: "Ganho de massa", program: "Ganho de massa · 8 sem.", progress: 64, lastActivity: "Há 3 dias", status: "risk" },
-  { id: "tr4", profileId: "marta-neto", name: "Marta Neto", email: "marta.neto@fitpro.com", avatar: portraitImages.athlete[1], goal: "Perda de peso", program: "Perda de peso · 10 sem.", progress: 20, lastActivity: "Há 1 semana", status: "paused" },
-  { id: "tr5", profileId: "nelson-sami-athlete", name: "Nelson Sami", email: "nelson.sami@fitpro.com", avatar: portraitImages.athlete[0], goal: "Performance", program: "Performance · 20 sem.", progress: 55, lastActivity: "Há 4 dias", status: "risk" },
-  { id: "tr6", profileId: "beatriz-chiapa", name: "Beatriz Chiapa", email: "beatriz.chiapa@fitpro.com", avatar: portraitImages.athlete[1], goal: "Consistência", program: "Consistência · 4 sem.", progress: 30, lastActivity: "Hoje", status: "on" },
+  { id: "tr1", profileId: "tiago-kiala", name: "Tiago Kiala", email: "tiago.kiala@fitpro.com", avatar: portraitImages.athlete[0], goal: "Consistência", program: "Consistência · 6 sem.", progress: 90, lastActivity: "Há 2 horas", status: "on", location: "Viana, Luanda", level: "Intermédio" },
+  { id: "tr2", profileId: "carla-domingos", name: "Carla Domingos", email: "carla.domingos@fitpro.com", avatar: portraitImages.athlete[1], goal: "Transformação", program: "Transformação · 12 sem.", progress: 82, lastActivity: "Ontem", status: "on", location: "Talatona, Luanda", level: "Avançado" },
+  { id: "tr3", profileId: "rui-ferreira-athlete", name: "Rui Ferreira", email: "rui.ferreira@fitpro.com", avatar: portraitImages.athlete[0], goal: "Ganho de massa", program: "Ganho de massa · 8 sem.", progress: 64, lastActivity: "Há 3 dias", status: "risk", location: "Talatona, Luanda", level: "Intermédio" },
+  { id: "tr4", profileId: "marta-neto", name: "Marta Neto", email: "marta.neto@fitpro.com", avatar: portraitImages.athlete[1], goal: "Perda de peso", program: "Perda de peso · 10 sem.", progress: 20, lastActivity: "Há 1 semana", status: "paused", location: "Talatona, Luanda", level: "Iniciante" },
+  { id: "tr5", profileId: "nelson-sami-athlete", name: "Nelson Sami", email: "nelson.sami@fitpro.com", avatar: portraitImages.athlete[0], goal: "Performance", program: "Performance · 20 sem.", progress: 55, lastActivity: "Há 4 dias", status: "risk", location: "Viana, Luanda", level: "Avançado" },
+  { id: "tr6", profileId: "beatriz-chiapa", name: "Beatriz Chiapa", email: "beatriz.chiapa@fitpro.com", avatar: portraitImages.athlete[1], goal: "Consistência", program: "Consistência · 4 sem.", progress: 30, lastActivity: "Hoje", status: "on", location: "Luanda", level: "Iniciante" },
 ];
 
 export type TraineeRequest = { id: string; name: string; avatar: string; goal: string; message: string };
@@ -100,11 +102,14 @@ export function savePricing(v: PricingPlan[]) {
   write(PRICING_KEY, v);
 }
 
-export type ClassItem = { id: string; name: string; description: string; maxParticipants: number; enrolled: number; schedule: string; image: string; instructor: string; rating: number };
+export type ClassItem = {
+  id: string; name: string; description: string; maxParticipants: number; enrolled: number; schedule: string; image: string; instructor: string; rating: number;
+  category: string; difficulty: string; durationMin: number; location: string; benefits: string[];
+};
 const CLASSES_KEY = "fitpro_trainer_classes";
 export const defaultClasses: ClassItem[] = [
-  { id: "cl1", name: "Treino Funcional em Grupo", description: "Circuito funcional de alta intensidade combinando força e cardio em formato de grupo.", maxParticipants: 18, enrolled: 16, schedule: "Seg/Qua/Sex · 17:30", image: portraitImages.trainer[0], instructor: "Ana Ferreira", rating: 4.8 },
-  { id: "cl2", name: "HIIT Matinal", description: "Treino intervalado de alta intensidade para acordar o corpo e acelerar o metabolismo.", maxParticipants: 15, enrolled: 9, schedule: "Ter/Qui · 06:30", image: portraitImages.trainer[0], instructor: "Ana Ferreira", rating: 4.6 },
+  { id: "cl1", name: "Treino Funcional em Grupo", description: "Circuito funcional de alta intensidade combinando força e cardio em formato de grupo.", maxParticipants: 18, enrolled: 16, schedule: "Seg/Qua/Sex · 17:30", image: portraitImages.trainer[0], instructor: "Ana Ferreira", rating: 4.8, category: "Funcional", difficulty: "Intermédio", durationMin: 45, location: "FitPro Talatona", benefits: ["🔥 Queima calórica elevada", "💪 Força funcional", "⚡ Condicionamento"] },
+  { id: "cl2", name: "HIIT Matinal", description: "Treino intervalado de alta intensidade para acordar o corpo e acelerar o metabolismo.", maxParticipants: 15, enrolled: 9, schedule: "Ter/Qui · 06:30", image: portraitImages.trainer[0], instructor: "Ana Ferreira", rating: 4.6, category: "HIIT", difficulty: "Avançado", durationMin: 30, location: "FitPro Talatona", benefits: ["🔥 Queima de gordura", "❤️ Condicionamento cardiovascular", "⏱ Curto e intenso"] },
 ];
 export function getClasses(): ClassItem[] {
   const v = read(CLASSES_KEY, defaultClasses);
