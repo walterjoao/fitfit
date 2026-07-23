@@ -100,27 +100,69 @@ export function savePricing(v: PricingPlan[]) {
   write(PRICING_KEY, v);
 }
 
-export type ClassItem = { id: string; name: string; description: string; maxParticipants: number; enrolled: number; schedule: string };
+export type ClassItem = { id: string; name: string; description: string; maxParticipants: number; enrolled: number; schedule: string; image: string; instructor: string; rating: number };
 const CLASSES_KEY = "fitpro_trainer_classes";
 export const defaultClasses: ClassItem[] = [
-  { id: "cl1", name: "Treino Funcional em Grupo", description: "Circuito funcional de alta intensidade.", maxParticipants: 18, enrolled: 16, schedule: "Seg/Qua/Sex · 17:30" },
-  { id: "cl2", name: "HIIT Matinal", description: "Treino intervalado de alta intensidade.", maxParticipants: 15, enrolled: 9, schedule: "Ter/Qui · 06:30" },
+  { id: "cl1", name: "Treino Funcional em Grupo", description: "Circuito funcional de alta intensidade combinando força e cardio em formato de grupo.", maxParticipants: 18, enrolled: 16, schedule: "Seg/Qua/Sex · 17:30", image: portraitImages.trainer[0], instructor: "Ana Ferreira", rating: 4.8 },
+  { id: "cl2", name: "HIIT Matinal", description: "Treino intervalado de alta intensidade para acordar o corpo e acelerar o metabolismo.", maxParticipants: 15, enrolled: 9, schedule: "Ter/Qui · 06:30", image: portraitImages.trainer[0], instructor: "Ana Ferreira", rating: 4.6 },
 ];
 export function getClasses(): ClassItem[] {
-  return read(CLASSES_KEY, defaultClasses);
+  const v = read(CLASSES_KEY, defaultClasses);
+  return v.map((c) => ({ ...defaultClasses[0], ...c }));
 }
 export function saveClasses(v: ClassItem[]) {
   write(CLASSES_KEY, v);
 }
 
-export type Assignment = { id: string; traineeId: string; traineeName: string; kind: "workout" | "class" | "note"; label: string; date: string; status: "active" | "completed" };
+export type Assignment = {
+  id: string; traineeId: string; traineeName: string; kind: "workout" | "class" | "note"; label: string; date: string; status: "active" | "completed";
+  workoutId?: string; workoutName?: string; endDate?: string; progress?: number;
+};
 const ASSIGNMENTS_KEY = "fitpro_trainer_assignments";
 export function getAssignments(): Assignment[] {
   return read<Assignment[]>(ASSIGNMENTS_KEY, []);
 }
 export function addAssignment(a: Omit<Assignment, "id" | "date" | "status">) {
-  const next = [{ ...a, id: Math.random().toString(36).slice(2), date: new Date().toISOString().slice(0, 10), status: "active" as const }, ...getAssignments()];
+  const next = [{ ...a, id: Math.random().toString(36).slice(2), date: new Date().toISOString().slice(0, 10), status: "active" as const, progress: a.progress ?? 0 }, ...getAssignments()];
   write(ASSIGNMENTS_KEY, next);
+  return next;
+}
+export function removeAssignment(id: string) {
+  const next = getAssignments().filter((a) => a.id !== id);
+  write(ASSIGNMENTS_KEY, next);
+  return next;
+}
+
+// ---------- Custom workouts (built via the "Criar Programa" wizard) ----------
+export type CustomExercise = { id: string; name: string; muscles: string[]; instructions: string; sets: number; reps: number; restSeconds: number; gifUrl?: string };
+export type CustomWorkout = {
+  id: string; name: string; description: string; goal: string; difficulty: string; durationMin: number; category: string;
+  createdDate: string; exercises: CustomExercise[]; cover: string;
+};
+const CUSTOM_WORKOUTS_KEY = "fitpro_trainer_custom_workouts";
+export function getCustomWorkouts(): CustomWorkout[] {
+  return read<CustomWorkout[]>(CUSTOM_WORKOUTS_KEY, []);
+}
+export function addCustomWorkout(w: Omit<CustomWorkout, "id" | "createdDate">) {
+  const next = [{ ...w, id: Math.random().toString(36).slice(2), createdDate: new Date().toISOString().slice(0, 10) }, ...getCustomWorkouts()];
+  write(CUSTOM_WORKOUTS_KEY, next);
+  return next;
+}
+export function removeCustomWorkout(id: string) {
+  const next = getCustomWorkouts().filter((w) => w.id !== id);
+  write(CUSTOM_WORKOUTS_KEY, next);
+  return next;
+}
+
+// ---------- Custom exercises added to the library ----------
+export type LibraryExercise = { id: string; name: string; muscles: string[]; equipment: string; difficulty: string; instructions: string; gifUrl?: string; custom?: boolean };
+const CUSTOM_EXERCISES_KEY = "fitpro_trainer_custom_exercises";
+export function getCustomExercises(): LibraryExercise[] {
+  return read<LibraryExercise[]>(CUSTOM_EXERCISES_KEY, []);
+}
+export function addCustomExercise(e: Omit<LibraryExercise, "id" | "custom">) {
+  const next = [{ ...e, id: Math.random().toString(36).slice(2), custom: true }, ...getCustomExercises()];
+  write(CUSTOM_EXERCISES_KEY, next);
   return next;
 }
 
