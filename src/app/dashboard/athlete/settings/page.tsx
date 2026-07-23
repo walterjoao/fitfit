@@ -74,6 +74,7 @@ export default function AthleteSettingsPage() {
   const [cards, setCards] = useState(getCards());
   const [roleActivations, setRoleActivations] = useState(getRoleActivations());
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false);
 
   const weightList = useLocalList<WeightEntry>("fitpro_weight_log", seedWeight);
   const measurementList = useLocalList<MeasurementEntry>("fitpro_measurements", seedMeasurements);
@@ -844,7 +845,17 @@ export default function AthleteSettingsPage() {
                 <div className="settings-section-head"><h2>Gestão da Conta</h2><p>Ações irreversíveis — usa com cuidado.</p></div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 420 }}>
                   <button className="btn btn-ghost" onClick={() => { clearSession(); window.location.href = "/"; }}>Terminar Sessão</button>
-                  <button className="btn btn-ghost">Desativar Conta Temporariamente</button>
+                  {!confirmDeactivate ? (
+                    <button className="btn btn-ghost" onClick={() => setConfirmDeactivate(true)}>Desativar Conta Temporariamente</button>
+                  ) : (
+                    <div className="dash-panel" style={{ padding: 16 }}>
+                      <p style={{ fontSize: 12.5, marginBottom: 10 }}>A tua conta fica invisível para outros utilizadores até voltares a iniciar sessão. Continuar?</p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDeactivate(false)}>Cancelar</button>
+                        <button className="btn btn-primary btn-sm" onClick={() => { clearSession(); window.location.href = "/"; }}>Confirmar Desativação</button>
+                      </div>
+                    </div>
+                  )}
                   {!confirmDelete ? (
                     <button className="btn btn-ghost" style={{ color: "var(--bad)", borderColor: "var(--bad)" }} onClick={() => setConfirmDelete(true)}>Eliminar Conta</button>
                   ) : (
@@ -852,7 +863,7 @@ export default function AthleteSettingsPage() {
                       <p style={{ fontSize: 12.5, marginBottom: 10 }}>Tens a certeza? Esta ação é permanente e todos os teus dados serão apagados.</p>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDelete(false)}>Cancelar</button>
-                        <button className="btn btn-primary btn-sm" style={{ background: "var(--bad)", borderColor: "var(--bad)" }}>Confirmar Eliminação</button>
+                        <button className="btn btn-primary btn-sm" style={{ background: "var(--bad)", borderColor: "var(--bad)" }} onClick={() => { clearSession(); window.location.href = "/"; }}>Confirmar Eliminação</button>
                       </div>
                     </div>
                   )}

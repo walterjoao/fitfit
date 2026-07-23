@@ -28,6 +28,7 @@ export default function EventDetailPage() {
   const event = useMemo(() => events.find((e) => e.id === params.id), [params.id]);
   const [going, setGoing] = useState(false);
   const [earned, setEarned] = useState(false);
+  const [invited, setInvited] = useState(false);
 
   if (session === undefined) return null;
   if (!session) {
@@ -80,7 +81,16 @@ export default function EventDetailPage() {
               <button className={`btn ${going ? "btn-ghost" : "btn-primary"}`} onClick={toggleGoing}>
                 {going ? "Cancelar Participação" : "Participar"}
               </button>
-              <button className="btn btn-ghost">Convidar Amigos</button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  navigator.clipboard?.writeText(`${window.location.origin}/events/${event.id}`);
+                  setInvited(true);
+                  setTimeout(() => setInvited(false), 2000);
+                }}
+              >
+                {invited ? "✓ Link copiado" : "Convidar Amigos"}
+              </button>
             </div>
           </div>
         </div>
