@@ -111,6 +111,7 @@ const navByRole: Record<Role, NavItem[]> = {
   ],
   admin: [
     { key: "dashboard", label: "Dashboard", href: "/dashboard/admin", icon: icons.dashboard },
+    { key: "users", label: "Utilizadores", href: "/dashboard/admin/users", icon: icons.members },
     { key: "clients", label: "Clientes", href: "/clients", icon: icons.clients },
     { key: "members", label: "Membros", href: "/dashboard/gym/members", icon: icons.members },
     { key: "trainers", label: "Treinadores", href: "/dashboard/gym/trainers", icon: icons.trainers },

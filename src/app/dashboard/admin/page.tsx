@@ -13,6 +13,7 @@ const kpis = [
 ];
 
 const shortcuts = [
+  { label: "Utilizadores", href: "/dashboard/admin/users" },
   { label: "Clientes (Trainer)", href: "/clients" },
   { label: "Membros (Ginásio)", href: "/dashboard/gym/members" },
   { label: "Treinadores", href: "/dashboard/gym/trainers" },
@@ -37,7 +38,7 @@ export default function AdminDashboard() {
 
         <div className="stat-grid">
           {kpis.map((k) => (
-            <div className="stat-card" key={k.label}>
+            <Link href={k.label === "Total de Utilizadores" ? "/dashboard/admin/users" : "#"} className="stat-card" key={k.label} style={{ textDecoration: "none", color: "inherit", cursor: k.label === "Total de Utilizadores" ? "pointer" : "default" }}>
               <div className="stat-top">
                 <span className="stat-label">{k.label}</span>
                 <span className="stat-icon" style={{ background: "var(--accent-soft)", color: "var(--accent-strong)" }}>
@@ -47,7 +48,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
               <div className="stat-value tabular">{k.value}</div>
-            </div>
+            </Link>
           ))}
         </div>
 
