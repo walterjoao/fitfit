@@ -14,6 +14,7 @@ const kpis = [
 
 const shortcuts = [
   { label: "Utilizadores", href: "/dashboard/admin/users" },
+  { label: "Integrações & APIs", href: "/dashboard/admin/integrations" },
   { label: "Clientes (Trainer)", href: "/clients" },
   { label: "Membros (Ginásio)", href: "/dashboard/gym/members" },
   { label: "Treinadores", href: "/dashboard/gym/trainers" },
