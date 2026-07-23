@@ -9,7 +9,7 @@ export default function TrackingPage() {
     <>
       <Sidebar role="nutritionist" active="tracking" />
       <Header />
-      <ComingSoon title="Acompanhamento Nutricional" description="Acompanha a adesão e o progresso nutricional dos clientes." />
+      <ComingSoon title="Acompanhamento Nutricional" description="Acompanha a adesão e o progresso nutricional dos clientes." icon="📈" backHref="/dashboard/nutritionist" />
     </>
   );
 }

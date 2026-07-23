@@ -9,7 +9,7 @@ export default function GymSubscriptionsPage() {
     <>
       <Sidebar role="gym" active="subscriptions" />
       <Header />
-      <ComingSoon title="Subscrições" description="Planos de subscrição, renovações e performance por plano." />
+      <ComingSoon title="Subscrições" description="Planos de subscrição, renovações e performance por plano." icon="💳" backHref="/dashboard/gym" />
     </>
   );
 }

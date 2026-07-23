@@ -13,7 +13,7 @@ export default function AthleteMembershipPage() {
     <>
       <Sidebar role="athlete" active="dashboard" />
       <Header />
-      <ComingSoon title="A Minha Subscrição" description="O teu ginásio atual e os planos que tens ativos." />
+      <ComingSoon title="A Minha Subscrição" description="O teu ginásio atual e os planos que tens ativos." icon="🏢" backHref="/dashboard/athlete" />
     </>
   );
 }

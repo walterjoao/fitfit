@@ -13,7 +13,7 @@ export default function AthleteBookingsPage() {
     <>
       <Sidebar role="athlete" active="dashboard" />
       <Header />
-      <ComingSoon title="As Minhas Marcações" description="Sessões de PT, aulas de ginásio e consultas de nutrição agendadas." />
+      <ComingSoon title="As Minhas Marcações" description="Sessões de PT, aulas de ginásio e consultas de nutrição agendadas." icon="📅" backHref="/dashboard/athlete" />
     </>
   );
 }

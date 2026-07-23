@@ -9,7 +9,7 @@ export default function GymClassesPage() {
     <>
       <Sidebar role="gym" active="classes" />
       <Header />
-      <ComingSoon title="Aulas" description="Horários e inscrições nas aulas em grupo do ginásio." />
+      <ComingSoon title="Aulas" description="Horários e inscrições nas aulas em grupo do ginásio." icon="🧑‍🤝‍🧑" backHref="/dashboard/gym" />
     </>
   );
 }

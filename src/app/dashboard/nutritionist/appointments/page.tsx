@@ -9,7 +9,7 @@ export default function AppointmentsPage() {
     <>
       <Sidebar role="nutritionist" active="appointments" />
       <Header />
-      <ComingSoon title="Consultas" description="Marcações e consultas de nutrição agendadas." />
+      <ComingSoon title="Consultas" description="Marcações e consultas de nutrição agendadas." icon="📅" backHref="/dashboard/nutritionist" />
     </>
   );
 }

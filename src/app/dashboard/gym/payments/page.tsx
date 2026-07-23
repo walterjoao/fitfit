@@ -9,7 +9,7 @@ export default function GymPaymentsPage() {
     <>
       <Sidebar role="gym" active="payments" />
       <Header />
-      <ComingSoon title="Pagamentos" description="Histórico de pagamentos e faturação dos membros." />
+      <ComingSoon title="Pagamentos" description="Histórico de pagamentos e faturação dos membros." icon="💰" backHref="/dashboard/gym" />
     </>
   );
 }

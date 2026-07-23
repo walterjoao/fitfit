@@ -9,7 +9,7 @@ export default function GymTrainersPage() {
     <>
       <Sidebar role="gym" active="trainers" />
       <Header />
-      <ComingSoon title="Treinadores" description="Gere a equipa de personal trainers e nutricionistas do ginásio." />
+      <ComingSoon title="Treinadores" description="Gere a equipa de personal trainers e nutricionistas do ginásio." icon="🧑‍🏫" backHref="/dashboard/gym" />
     </>
   );
 }

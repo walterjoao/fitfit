@@ -9,7 +9,7 @@ export default function ReportsPage() {
     <>
       <Sidebar role="nutritionist" active="reports" />
       <Header />
-      <ComingSoon title="Relatórios" description="Relatórios de progresso e cumprimento de objetivos por cliente." />
+      <ComingSoon title="Relatórios" description="Relatórios de progresso e cumprimento de objetivos por cliente." icon="📋" backHref="/dashboard/nutritionist" />
     </>
   );
 }

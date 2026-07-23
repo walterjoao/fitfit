@@ -9,7 +9,7 @@ export default function ShopOrdersPage() {
     <>
       <Sidebar role="shop" active="orders" />
       <Header />
-      <ComingSoon title="Encomendas" description="Todas as encomendas recebidas e o seu estado de envio." />
+      <ComingSoon title="Encomendas" description="Todas as encomendas recebidas e o seu estado de envio." icon="📦" backHref="/dashboard/shop" />
     </>
   );
 }

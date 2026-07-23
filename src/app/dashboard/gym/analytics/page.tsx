@@ -9,7 +9,7 @@ export default function GymAnalyticsPage() {
     <>
       <Sidebar role="gym" active="analytics" />
       <Header />
-      <ComingSoon title="Analítica" description="Crescimento de membros, retenção e receita do ginásio." />
+      <ComingSoon title="Analítica" description="Crescimento de membros, retenção e receita do ginásio." icon="📊" backHref="/dashboard/gym" />
     </>
   );
 }

@@ -9,7 +9,7 @@ export default function ShopPaymentsPage() {
     <>
       <Sidebar role="shop" active="payments" />
       <Header />
-      <ComingSoon title="Pagamentos" description="Histórico de pagamentos e faturação da tua loja." />
+      <ComingSoon title="Pagamentos" description="Histórico de pagamentos e faturação da tua loja." icon="💰" backHref="/dashboard/shop" />
     </>
   );
 }
