@@ -8,7 +8,7 @@ import type { Role } from "@/components/Sidebar";
 import { useRoleGuard } from "@/lib/session";
 import { messagesPath } from "@/lib/accountData";
 import { lbData, initials, trendGlyph } from "@/lib/data";
-import { slugify } from "@/lib/directory";
+import { slugify, isFollowing, toggleFollow } from "@/lib/directory";
 import {
   athleteLeaderboard,
   trainerLeaderboard,
@@ -38,8 +38,14 @@ export default function LeaderboardView({ role }: { role: Role }) {
   const [lbCat, setLbCat] = useState<LbCat | "geral">("geral");
   const [scope, setScope] = useState<(typeof scopes)[number]>("Global");
   const [period, setPeriod] = useState<(typeof periods)[number]>("Semana");
+  const [, forceRerender] = useState(0);
 
   if (!ready) return null;
+
+  function follow(id: string) {
+    toggleFollow(id);
+    forceRerender((n) => n + 1);
+  }
 
   const myMessagesPath = messagesPath(role);
 
@@ -103,7 +109,9 @@ export default function LeaderboardView({ role }: { role: Role }) {
                       </div>
                     </div>
                     <div className="rank-actions" onClick={(e) => e.preventDefault()}>
-                      <button className="btn btn-primary">Seguir</button>
+                      <button className={`btn ${isFollowing(a.id) ? "btn-ghost" : "btn-primary"}`} onClick={() => follow(a.id)}>
+                        {isFollowing(a.id) ? "A Seguir ✓" : "Seguir"}
+                      </button>
                       <Link href={myMessagesPath} className="btn btn-ghost">Mensagem</Link>
                     </div>
                   </Link>

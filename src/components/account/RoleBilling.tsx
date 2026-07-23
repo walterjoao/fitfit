@@ -1,17 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import type { Role } from "@/components/Sidebar";
 import { useRoleGuard } from "@/lib/session";
 import { plansByRole, type RoleKey } from "@/lib/accountData";
 
+function planKey(role: RoleKey) {
+  return `fitpro_billing_plan_${role}`;
+}
+
 export default function RoleBilling({ role, sidebarActive }: { role: RoleKey; sidebarActive: string }) {
   const { ready } = useRoleGuard(role);
+  const plans = plansByRole[role];
+  const [currentId, setCurrentId] = useState(() => {
+    try {
+      return localStorage.getItem(planKey(role)) || plans[0].id;
+    } catch {
+      return plans[0].id;
+    }
+  });
+  const [switched, setSwitched] = useState(false);
+
   if (!ready) return null;
 
-  const plans = plansByRole[role];
-  const current = plans[0];
+  const current = plans.find((p) => p.id === currentId) || plans[0];
+
+  function switchPlan(id: string) {
+    setCurrentId(id);
+    try {
+      localStorage.setItem(planKey(role), id);
+    } catch {}
+    setSwitched(true);
+    setTimeout(() => setSwitched(false), 2000);
+  }
 
   return (
     <>
@@ -27,6 +50,7 @@ export default function RoleBilling({ role, sidebarActive }: { role: RoleKey; si
           <p style={{ fontSize: 12, color: "var(--text-faint)", fontWeight: 600, marginBottom: 4 }}>PLANO ATUAL</p>
           <p style={{ fontSize: 18, fontWeight: 700 }}>{current.name}</p>
           <p style={{ fontSize: 12.5, color: "var(--text-dim)", marginTop: 4 }}>Estado: <span style={{ color: "var(--good)", fontWeight: 700 }}>Ativo</span> · Renova a 1 Ago 2026</p>
+          {switched && <p style={{ fontSize: 12, color: "var(--good)", marginTop: 6 }}>✓ Plano alterado com sucesso.</p>}
         </div>
 
         <div className="section-head">
@@ -44,7 +68,7 @@ export default function RoleBilling({ role, sidebarActive }: { role: RoleKey; si
                   <li key={f}>{f}</li>
                 ))}
               </ul>
-              <button className={`btn ${p.id === current.id ? "btn-ghost" : "btn-primary"} btn-sm`} disabled={p.id === current.id}>
+              <button className={`btn ${p.id === current.id ? "btn-ghost" : "btn-primary"} btn-sm`} disabled={p.id === current.id} onClick={() => switchPlan(p.id)}>
                 {p.id === current.id ? "Plano Atual" : "Mudar para este plano"}
               </button>
             </div>
