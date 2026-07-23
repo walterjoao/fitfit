@@ -6,30 +6,34 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import type { Role } from "@/components/Sidebar";
 import { useSession } from "@/lib/session";
-import { getNotifications, markRead, removeNotification, type Notification, type NotifCategory } from "@/lib/notifications";
+import { getNotificationsFor, markRead, removeNotification, type Notification, type NotifCategory } from "@/lib/notifications";
 
-const filters: { key: NotifCategory | "all"; label: string }[] = [
+const filters: { key: NotifCategory | "all" | "unread"; label: string }[] = [
   { key: "all", label: "Todas" },
+  { key: "unread", label: "Não lidas" },
+  { key: "messages", label: "Mensagens" },
   { key: "training", label: "Treino" },
+  { key: "nutrition", label: "Nutrição" },
   { key: "booking", label: "Marcações" },
   { key: "events", label: "Eventos" },
-  { key: "messages", label: "Mensagens" },
+  { key: "marketplace", label: "Marketplace" },
   { key: "payments", label: "Pagamentos" },
+  { key: "reviews", label: "Avaliações" },
 ];
 
 export default function NotificationsPage() {
   const session = useSession();
   const [list, setList] = useState<Notification[]>([]);
-  const [filter, setFilter] = useState<NotifCategory | "all">("all");
+  const [filter, setFilter] = useState<NotifCategory | "all" | "unread">("all");
 
   useEffect(() => {
     function refresh() {
-      setList(getNotifications());
+      setList(getNotificationsFor(session?.name));
     }
     refresh();
     window.addEventListener("fitpro:notifications", refresh);
     return () => window.removeEventListener("fitpro:notifications", refresh);
-  }, []);
+  }, [session?.name]);
 
   if (session === undefined) return null;
   if (!session) {
@@ -37,7 +41,7 @@ export default function NotificationsPage() {
     return null;
   }
 
-  const visible = filter === "all" ? list : list.filter((n) => n.category === filter);
+  const visible = filter === "all" ? list : filter === "unread" ? list.filter((n) => !n.read) : list.filter((n) => n.category === filter);
 
   return (
     <>

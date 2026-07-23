@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSession, clearSession } from "@/lib/session";
 import { settingsPath, billingPath, financePath, leaderboardPath } from "@/lib/accountData";
-import { getNotifications, markRead, removeNotification, type Notification } from "@/lib/notifications";
+import { getNotificationsFor, markRead, removeNotification, type Notification } from "@/lib/notifications";
 
 const workoutIcon = <path d="M6.5 6.5 3 10l3.5 3.5M17.5 6.5 21 10l-3.5 3.5M14 4l-4 16" />;
 const mealIcon = <path d="M12 3c-3 2-5 5-5 9a5 5 0 0 0 10 0c0-4-2-7-5-9Z" />;
@@ -78,7 +78,7 @@ export default function Header() {
       if (e.key === "Escape") setOpenMenu(null);
     }
     function onNotif() {
-      setLiveNotifications(getNotifications());
+      setLiveNotifications(getNotificationsFor(session?.name));
     }
     document.addEventListener("click", onDocClick);
     document.addEventListener("keydown", onKey);
@@ -89,7 +89,7 @@ export default function Header() {
       document.removeEventListener("keydown", onKey);
       window.removeEventListener("fitpro:notifications", onNotif);
     };
-  }, []);
+  }, [session?.name]);
 
   return (
     <header className="app-header">
