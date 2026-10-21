@@ -1,0 +1,30 @@
+name: Server check (read-only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/ola-y6a8q0]
+    paths: [.github/workflows/server-check.yml]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: List site folders (read-only)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes \
+            -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" '
+              echo "== whoami / node / php"; whoami; node -v 2>&1; php -v 2>&1 | head -1
+              echo "== ~/domains"; ls -la ~/domains
+              for d in bestmarket.co.ao novo.bestmarket.co.ao; do
+                echo "== $d (top level)"; ls -la ~/domains/$d
+                echo "== $d/public_html (top level)"; ls -la ~/domains/$d/public_html | head -60
+              done
+            '
